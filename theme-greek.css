@@ -295,45 +295,39 @@ body.greek .passage-row,body.greek .library-card,body.greek .story-card,body.gre
 body.greek .node-card,body.greek .board-card,body.greek .clip-tip{
   background-color:#16305f;
   background-image:
-    radial-gradient(1.9px 1.9px at 24px 32px,#fff3c4e6 0%,#efd98a73 45%,transparent 65%),
-    radial-gradient(3.1px 3.1px at 132px 96px,#efd98a99 0%,#c9a22759 50%,transparent 68%),
-    radial-gradient(2.2px 2.2px at 84px 168px,#fff3c4cc 0%,#e6c45559 50%,transparent 66%),
-    radial-gradient(1.5px 1.5px at 196px 52px,#e6c455a6 0%,transparent 62%),
-    radial-gradient(3.5px 3px at 58px 118px,#efd98a73 0%,#c9a22745 55%,transparent 70%),
-    radial-gradient(1.8px 1.8px at 168px 190px,#fff3c4b3 0%,#efd98a4d 50%,transparent 65%),
-    radial-gradient(1.2px 1.2px at 104px 60px,#e6c4558c 0%,transparent 60%),
-    radial-gradient(2.4px 2.4px at 224px 148px,#efd98a80 0%,#c9a22740 52%,transparent 68%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cpath d='M22.6 30.9 L25.1 30.6 L25.4 32.7 L22.9 33.4 Z' fill='%23fff3c4' fill-opacity='.9'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cpath d='M129.8 94.2 L134.2 93.5 L134.9 96.7 L131.3 98.5 L129.5 96 Z' fill='%23efd98a' fill-opacity='.6'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cpath d='M82.6 166.9 L85.4 166.6 L85.8 168.7 L83.3 169.4 Z' fill='%23fff3c4' fill-opacity='.8'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cpath d='M194.9 51.3 L197.1 51.1 L196.7 53.1 L195.3 52.7 Z' fill='%23e6c455' fill-opacity='.65'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340'%3E%3Cpath d='M55.5 116.6 L59.4 115.5 L61.2 118 L59.1 120.5 L55.8 119.4 Z' fill='%23efd98a' fill-opacity='.45'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cpath d='M166.9 188.9 L169.4 188.6 L169.8 190.7 L167.3 191.4 Z' fill='%23fff3c4' fill-opacity='.7'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cpath d='M103.3 59.3 L105.1 59.4 L104.4 61.1 Z' fill='%23e6c455' fill-opacity='.55'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='360'%3E%3Cpath d='M222.2 146.6 L225.4 146.2 L226.5 148.7 L223.3 150.2 L221.8 148.7 Z' fill='%23efd98a' fill-opacity='.5'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.45'/%3E%3CfeFuncG type='linear' slope='0.45'/%3E%3CfeFuncB type='linear' slope='0.55'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.18'/%3E%3C/svg%3E");
   background-size:240px 240px,300px 300px,320px 320px,260px 260px,340px 340px,280px 280px,220px 220px,360px 360px,180px 180px;
   box-shadow:0 14px 34px #00000059,inset 0 0 0 1px #09153080,inset 0 -10px 22px #00000045;
 }
 
-/* 线索板星点：忒洛波利斯主题 · 鎏金星光随机散布 */
+/* 线索板星空：细芒四芒星，密度减半、尺寸七成；蓝白主星 + 白 + 一颗微红，与青金石金斑拉开 */
 body.greek .board-canvas{
   background-image:
-    radial-gradient(1.8px 1.8px at 30px 42px,#fff3c4d9 0%,#efd98a55 45%,transparent 70%),
-    radial-gradient(1.1px 1.1px at 96px 138px,#efd98a99 0%,transparent 65%),
-    radial-gradient(2.6px 2.6px at 158px 64px,#fff3c4e6 0%,#c9a22766 45%,transparent 72%),
-    radial-gradient(1.3px 1.3px at 214px 156px,#efd98a80 0%,transparent 65%),
-    radial-gradient(2px 2px at 64px 208px,#fff3c4b3 0%,#efd98a44 45%,transparent 70%),
-    radial-gradient(1px 1px at 188px 232px,#efd98a73 0%,transparent 65%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cdefs%3E%3CradialGradient id='h'%3E%3Cstop offset='0' stop-color='%23a9c3ff' stop-opacity='.3'/%3E%3Cstop offset='.6' stop-color='%23a9c3ff' stop-opacity='.08'/%3E%3Cstop offset='1' stop-color='%23a9c3ff' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='30' cy='42' r='7' fill='url(%23h)'/%3E%3Cpath d='M30 35.7 L30.85 41.15 L36.3 42 L30.85 42.85 L30 48.3 L29.15 42.85 L23.7 42 L29.15 41.15 Z' fill='%23f2f7ff'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='310' height='310'%3E%3Cdefs%3E%3CradialGradient id='h'%3E%3Cstop offset='0' stop-color='%23cdd9f2' stop-opacity='.28'/%3E%3Cstop offset='.6' stop-color='%23cdd9f2' stop-opacity='.07'/%3E%3Cstop offset='1' stop-color='%23cdd9f2' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='96' cy='138' r='5' fill='url(%23h)'/%3E%3Cpath d='M96 133.45 L96.7 137.3 L100.55 138 L96.7 138.7 L96 142.55 L95.3 138.7 L91.45 138 L95.3 137.3 Z' fill='%23ffffff'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='330' height='330'%3E%3Cdefs%3E%3CradialGradient id='h'%3E%3Cstop offset='0' stop-color='%23d98873' stop-opacity='.25'/%3E%3Cstop offset='1' stop-color='%23d98873' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='64' cy='208' r='3' fill='url(%23h)'/%3E%3Cpath d='M64 205.55 L64.5 207.5 L66.45 208 L64.5 208.5 L64 210.45 L63.5 208.5 L61.55 208 L63.5 207.5 Z' fill='%23f6c0ae'/%3E%3C/svg%3E"),
     repeating-linear-gradient(45deg,#c9a22717 0 1px,transparent 1px 26px),
     repeating-linear-gradient(-45deg,#c9a22717 0 1px,transparent 1px 26px);
-  background-size:260px 260px,310px 310px,350px 350px,290px 290px,330px 330px,250px 250px,auto,auto;
+  background-size:auto,auto,auto,auto,auto;
 }
 
-/* 时间轴背景：忒洛波利斯主题 · 与线索板一致的鎏金星点 + 菱格 */
+/* 时间轴背景：与线索板同一套细芒星空（密度减半、尺寸七成）+ 菱格 */
 body.greek .timeline-scroll{
   background-image:
-    radial-gradient(1.8px 1.8px at 30px 42px,#fff3c4d9 0%,#efd98a55 45%,transparent 70%),
-    radial-gradient(1.1px 1.1px at 96px 138px,#efd98a99 0%,transparent 65%),
-    radial-gradient(2.6px 2.6px at 158px 64px,#fff3c4e6 0%,#c9a22766 45%,transparent 72%),
-    radial-gradient(1.3px 1.3px at 214px 156px,#efd98a80 0%,transparent 65%),
-    radial-gradient(2px 2px at 64px 208px,#fff3c4b3 0%,#efd98a44 45%,transparent 70%),
-    radial-gradient(1px 1px at 188px 232px,#efd98a73 0%,transparent 65%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cdefs%3E%3CradialGradient id='h'%3E%3Cstop offset='0' stop-color='%23a9c3ff' stop-opacity='.3'/%3E%3Cstop offset='.6' stop-color='%23a9c3ff' stop-opacity='.08'/%3E%3Cstop offset='1' stop-color='%23a9c3ff' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='30' cy='42' r='7' fill='url(%23h)'/%3E%3Cpath d='M30 35.7 L30.85 41.15 L36.3 42 L30.85 42.85 L30 48.3 L29.15 42.85 L23.7 42 L29.15 41.15 Z' fill='%23f2f7ff'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='310' height='310'%3E%3Cdefs%3E%3CradialGradient id='h'%3E%3Cstop offset='0' stop-color='%23cdd9f2' stop-opacity='.28'/%3E%3Cstop offset='.6' stop-color='%23cdd9f2' stop-opacity='.07'/%3E%3Cstop offset='1' stop-color='%23cdd9f2' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='96' cy='138' r='5' fill='url(%23h)'/%3E%3Cpath d='M96 133.45 L96.7 137.3 L100.55 138 L96.7 138.7 L96 142.55 L95.3 138.7 L91.45 138 L95.3 137.3 Z' fill='%23ffffff'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='330' height='330'%3E%3Cdefs%3E%3CradialGradient id='h'%3E%3Cstop offset='0' stop-color='%23d98873' stop-opacity='.25'/%3E%3Cstop offset='1' stop-color='%23d98873' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='64' cy='208' r='3' fill='url(%23h)'/%3E%3Cpath d='M64 205.55 L64.5 207.5 L66.45 208 L64.5 208.5 L64 210.45 L63.5 208.5 L61.55 208 L63.5 207.5 Z' fill='%23f6c0ae'/%3E%3C/svg%3E"),
     repeating-linear-gradient(45deg,#c9a22717 0 1px,transparent 1px 26px),
     repeating-linear-gradient(-45deg,#c9a22717 0 1px,transparent 1px 26px);
-  background-size:260px 260px,310px 310px,350px 350px,290px 290px,330px 330px,250px 250px,auto,auto;
+  background-size:auto,auto,auto,auto,auto;
 }
 /* 青金石卡面：按卡片序号分配不同浓度的青金石蓝 + 金斑随机偏移 */
 body.greek :is(.library-card,.story-card,.character-card,.passage-row,.node-card,.board-card):nth-child(2n){

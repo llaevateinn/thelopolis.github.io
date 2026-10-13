@@ -87,7 +87,7 @@ body.greek .library-card .excerpt,body.greek .story-card p,body.greek .character
 body.greek .clip-tip p,body.greek .row-main small{color:#cfc7a8}
 body.greek .card-meta,body.greek .library-card .story-name,body.greek .character-card-foot,
 body.greek .row-date,body.greek .row-story{color:#8fa3d9}
-body.greek .date-chip{background:#002fa755;color:#cfd9f7;border-color:#4a6fd4}
+body.greek .date-chip{background:transparent;color:var(--gold-hi);border-color:var(--gold-deep);text-shadow:0 1px 1px #00000066}
 body.greek .board-card:hover{border-color:var(--gold)}
 body.greek .board-card.selected{border-color:var(--gold);box-shadow:0 0 0 3px #c9a22744}
 body.greek .character-avatar,body.greek .clue-avatar{background:#002fa766;color:var(--gold-hi);border:1px solid #4a6fd4}
@@ -219,3 +219,42 @@ body.greek{
 body.greek .topbar{margin:0 -50px;padding:0 50px}
 @media(max-width:1100px){body.greek .topbar{margin:0 -28px;padding:0 28px}}
 @media(max-width:650px){body.greek .topbar{margin:0 -16px;padding:0 16px}}
+
+/* 库卡片就地展开的正文：鎏金字 */
+body.greek .library-card .library-full{color:var(--gold-hi);border-top-color:#31498a;text-shadow:0 1px 1px #00000066}
+
+/* 相关树：忒洛波利斯主题 */
+body.greek .character-card .rel-panel{border-top-color:#31498a}
+body.greek .rel-story{color:var(--gold-hi);text-shadow:0 1px 1px #00000066}
+body.greek .rel-story:hover{background:#1b3161}
+body.greek .rel-count{color:#8ea3d8}
+body.greek .rel-clip{color:#cfd9f7}
+body.greek .rel-clip:hover{background:#1b3161;color:var(--gold-hi)}
+body.greek .rel-empty{color:#8ea3d8}
+body.greek .library-card.flash-hl,body.greek .story-card.flash-hl{border-color:var(--gold);box-shadow:0 0 0 3px #c9a22744}
+
+/* 忒洛波利斯主题：鎏金缠绳手杖滑动条（含最外层视口滚动条） */
+html.greek{scrollbar-color:#c9a227 #0d1734}   /* Firefox 视口滚动条 */
+html.greek *{scrollbar-color:var(--gold) #0d1734}
+html.greek::-webkit-scrollbar,html.greek ::-webkit-scrollbar{width:12px;height:12px}
+html.greek::-webkit-scrollbar-track,html.greek ::-webkit-scrollbar-track{background:#0d1734;border-radius:8px;box-shadow:inset 0 0 4px #00000088}
+html.greek::-webkit-scrollbar-thumb,html.greek ::-webkit-scrollbar-thumb{
+  background:
+    repeating-linear-gradient(45deg,#efd98a 0 2px,#c9a227 2px 5px,#a8842a 5px 7px),
+    linear-gradient(180deg,#efd98a,#c9a227);
+  border:2px solid #0d1734;border-radius:8px;background-clip:padding-box;
+  box-shadow:inset 0 0 3px #00000055;
+}
+html.greek::-webkit-scrollbar-thumb:hover,html.greek ::-webkit-scrollbar-thumb:hover{
+  background:
+    repeating-linear-gradient(45deg,#fff3c4 0 2px,#efd98a 2px 5px,#c9a227 5px 7px),
+    linear-gradient(180deg,#fff3c4,#efd98a);
+  background-clip:padding-box;
+}
+html.greek::-webkit-scrollbar-corner,html.greek ::-webkit-scrollbar-corner{background:#0d1734}
+
+/* 品牌书名：忒洛波利斯主题 */
+body.greek .brand-title em{color:var(--gold);opacity:.85;text-shadow:0 1px 1px #00000088}
+body.greek .brand-title b{color:var(--gold-hi);text-shadow:0 1px 2px #00000099}
+body.greek .brand-divider>span:first-child,body.greek .brand-divider>span:last-child{background:var(--gold-deep)}
+body.greek .brand-fleur{color:var(--gold-hi);text-shadow:0 0 6px #efd98a66,0 1px 2px #00000099}

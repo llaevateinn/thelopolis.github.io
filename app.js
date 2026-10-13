@@ -70,6 +70,8 @@ async function boot() {
   bindEvents();
   applyTheme();
   applyFontSize();
+  document.body.classList.toggle('side-collapsed', !!db.prefs.sideCollapsed);
+  $('#side-toggle .nav-icon').textContent = db.prefs.sideCollapsed ? '▸' : '◂';
   applyEditMode();
   render();
 }
@@ -670,7 +672,7 @@ function applyBoardZoom(w, h) {
 }
 function attachBoardCardHandlers(node, p) {
   node.addEventListener('pointerdown', e => {
-    if (e.button !== 0 || !editUnlocked) return;   // 参观模式：禁止拖动卡片
+    if (e.button !== 0) return;   // 访客也可拖拽卡片（不落盘，刷新即还原）
     const start = { x: e.clientX, y: e.clientY };
     const orig = p.boardPosition || { x: parseFloat(node.style.left) || 0, y: parseFloat(node.style.top) || 0 };
     let moved = false;
@@ -757,9 +759,12 @@ function renderLibrary() {
     return !query || text.includes(query);
   }).sort(dateSort);
   root.innerHTML = rows.length ? rows.map(p =>
-    `<article class="library-card" data-edit="${esc(p.id)}"><div class="library-card-head"><div><h3>${esc(p.title)}</h3><div class="story-name">${esc(story(p.storyId)?.title || '未归档')}</div></div><div class="date-chip">${esc(p.date || '时间待补')}</div></div>${p.body ? `<p class="excerpt">${esc(p.body.slice(0, 240))}${p.body.length > 240 ? '…' : ''}</p>` : ''}<div class="library-meta"><span class="tag">${esc(p.timeline || '未设时间线')}</span>${p.section === 'outline' ? '<span class="tag god">大纲</span>' : ''}${charsFor(p).map(c => `<span class="tag ${kindClass(c.role)}">${esc(c.name)} · ${kindLabel(c.role)}</span>`).join('')}${cluesFor(p).map(c => `<span class="tag clue"># ${esc(c.name)}</span>`).join('')}</div></article>`
+    `<article class="library-card" data-edit="${esc(p.id)}"><div class="library-card-head"><div><h3>${esc(p.title)}</h3><div class="story-name">${esc(story(p.storyId)?.title || '未归档')}</div></div><div class="date-chip">${esc(p.date || '时间待补')}</div></div>${p.body ? `<p class="excerpt">${esc(p.body.slice(0, 240))}${p.body.length > 240 ? '…' : ''}</p>` : ''}<div class="library-full">${p.html ? sanitizeClipHtml(p.html) : writerBodyMarkup(p.body || '')}</div><div class="library-meta"><span class="tag">${esc(p.timeline || '未设时间线')}</span>${p.section === 'outline' ? '<span class="tag god">大纲</span>' : ''}${charsFor(p).map(c => `<span class="tag ${kindClass(c.role)}">${esc(c.name)} · ${kindLabel(c.role)}</span>`).join('')}${cluesFor(p).map(c => `<span class="tag clue"># ${esc(c.name)}</span>`).join('')}</div></article>`
   ).join('') : emptyHTML('没有找到 clips', '试试调整关键词，或新建一个 clips。', '⌕');
-  $$('[data-edit]', root).forEach(el => el.onclick = () => openPassage(el.dataset.edit));
+  $$('[data-edit]', root).forEach(el => el.onclick = () => {
+    if (!editUnlocked) { el.classList.toggle('expanded'); return; }   // 访客：就地展开全文
+    openPassage(el.dataset.edit);
+  });
 }
 
 /* ============ 码字 ============ */
@@ -1024,6 +1029,49 @@ function openPassage(pid = null) {
 }
 
 /* ============ 角色数据库 ============ */
+/* 相关树：一级故事列表，点故事展开该故事下的 clips（角色/线索卡片共用） */
+function relMatrixHTML(list) {
+  if (!list.length) return '<div class="rel-tree rel-empty">尚无关联的 clip</div>';
+  const byStory = new Map();
+  list.forEach(p => {
+    const k = p.storyId || '_none';
+    if (!byStory.has(k)) byStory.set(k, []);
+    byStory.get(k).push(p);
+  });
+  const items = [...byStory.entries()].map(([sid, ps]) => {
+    const s = story(sid);
+    return `<div class="rel-story" data-rel-story><span>${esc(s?.title || '未归档')}</span><span class="rel-count">${ps.length}</span></div><div class="rel-clips hidden">${ps.sort(dateSort).map(p => `<div class="rel-clip" data-goto-clip="${esc(p.id)}">${esc(p.title || '未命名 clip')}</div>`).join('')}</div>`;
+  }).join('');
+  return `<div class="rel-tree">${items}</div>`;
+}
+/* 跳到「故事与 clips」并定位高亮 */
+function gotoLibrary(tab, targetId) {
+  libraryTab = tab;
+  $('#library-search').value = '';
+  $$('.library-tab').forEach(x => x.classList.toggle('active', x.dataset.tab === tab));
+  switchView('library');
+  renderLibrary();
+  const sel = tab === 'passages' ? `[data-edit="${CSS.escape(targetId)}"]` : `[data-story-open="${CSS.escape(targetId)}"]`;
+  const el = document.querySelector(sel);
+  if (el) {
+    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    el.classList.add('flash-hl');
+    setTimeout(() => el.classList.remove('flash-hl'), 1800);
+  }
+}
+/* 卡片点击：展开/收起相关树；点故事展开其 clips，点 clip 跳转 */
+function bindRelCards(root) {
+  $$('.character-card', root).forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('button')) return;
+      const gc = e.target.closest('[data-goto-clip]');
+      if (gc) { e.stopPropagation(); return gotoLibrary('passages', gc.dataset.gotoClip); }
+      const rs = e.target.closest('[data-rel-story]');
+      if (rs) { e.stopPropagation(); rs.nextElementSibling?.classList.toggle('hidden'); return; }
+      card.classList.toggle('show-rel');
+    });
+  });
+}
 function renderCharacterDB() {
   const root = $('#character-list');
   if (!root) return;
@@ -1034,9 +1082,10 @@ function renderCharacterDB() {
     (!query || [c.name, c.enName, c.description].join(' ').toLowerCase().includes(query)));
   $('#character-count').textContent = `${db.characters.length} 位角色`;
   root.innerHTML = chars.length ? chars.map(c => {
-    const count = db.passages.filter(p => (p.characters || []).some(x => x.id === c.id)).length;
-    return `<article class="character-card"><div class="character-card-head"><span class="character-avatar">${esc((c.name || '?').slice(0, 1))}</span><div><h3>${esc(c.name)}</h3>${c.enName ? `<small class="char-en">${esc(c.enName)}</small>` : ''}<span class="character-kind ${kindClass(c.kind)}">${kindLabel(c.kind)}</span></div><div class="character-card-actions"><button type="button" class="text-button" data-character-edit="${esc(c.id)}">编辑</button><button type="button" class="text-button character-remove" data-character-delete="${esc(c.id)}">删除</button></div></div><p>${esc(c.description || '还没有角色简介。')}</p><div class="character-card-foot"><span>出现在 ${count} 个 clips</span></div></article>`;
+    const featured = db.passages.filter(p => (p.characters || []).some(x => x.id === c.id));
+    return `<article class="character-card"><div class="character-card-head"><span class="character-avatar">${esc((c.name || '?').slice(0, 1))}</span><div><h3>${esc(c.name)}</h3>${c.enName ? `<small class="char-en">${esc(c.enName)}</small>` : ''}<span class="character-kind ${kindClass(c.kind)}">${kindLabel(c.kind)}</span></div><div class="character-card-actions"><button type="button" class="text-button" data-character-edit="${esc(c.id)}">编辑</button><button type="button" class="text-button character-remove" data-character-delete="${esc(c.id)}">删除</button></div></div><p>${esc(c.description || '还没有角色简介。')}</p><div class="character-card-foot"><span>出现在 ${featured.length} 个 clips · 点击查看</span></div><div class="rel-panel">${relMatrixHTML(featured)}</div></article>`;
   }).join('') : emptyHTML(query ? '没有找到匹配角色' : '角色数据库还是空的', query ? '试试其他关键词。' : '添加角色后，就能在 clip 设置中标记他们的出场，或用「识别角色」自动标注。', '♙');
+  bindRelCards(root);
   $$('[data-character-edit]', root).forEach(btn => btn.onclick = () => {
     const c = charObj(btn.dataset.characterEdit); if (!c) return;
     $('#character-id').value = c.id; $('#character-name').value = c.name || '';
@@ -1071,9 +1120,10 @@ function renderClueDB() {
   const clues = db.clues.filter(c => !query || [c.name, c.description].join(' ').toLowerCase().includes(query));
   $('#clue-dir-count').textContent = `${db.clues.length} 条线索`;
   root.innerHTML = clues.length ? clues.map(c => {
-    const count = db.passages.filter(p => (p.clueIds || []).includes(c.id)).length;
-    return `<article class="character-card"><div class="character-card-head"><span class="character-avatar">⬡</span><div><h3>${esc(c.name)}</h3><span class="character-kind god">线索</span></div><div class="character-card-actions"><button type="button" class="text-button" data-clue-edit="${esc(c.id)}">编辑</button><button type="button" class="text-button character-remove" data-clue-delete="${esc(c.id)}">删除</button></div></div><p>${esc(c.description || '还没有线索简介。')}</p><div class="character-card-foot"><span>关联 ${count} 个 clips</span></div></article>`;
+    const linked = db.passages.filter(p => (p.clueIds || []).includes(c.id));
+    return `<article class="character-card"><div class="character-card-head"><span class="character-avatar">⬡</span><div><h3>${esc(c.name)}</h3><span class="character-kind god">线索</span></div><div class="character-card-actions"><button type="button" class="text-button" data-clue-edit="${esc(c.id)}">编辑</button><button type="button" class="text-button character-remove" data-clue-delete="${esc(c.id)}">删除</button></div></div><p>${esc(c.description || '还没有线索简介。')}</p><div class="character-card-foot"><span>关联 ${linked.length} 个 clips · 点击查看</span></div><div class="rel-panel">${relMatrixHTML(linked)}</div></article>`;
   }).join('') : emptyHTML(query ? '没有找到匹配线索' : '还没有线索', query ? '试试其他关键词。' : '添加线索后，在 clip 设置中标注，相同线索的 clips 会在线索板自动关联。', '⬡');
+  bindRelCards(root);
   $$('[data-clue-edit]', root).forEach(btn => btn.onclick = () => {
     const c = clueObj(btn.dataset.clueEdit); if (!c) return;
     $('#clue-id').value = c.id; $('#clue-name').value = c.name || ''; $('#clue-description').value = c.description || '';
@@ -1174,9 +1224,14 @@ function switchView(name) {
 }
 
 /* --- 主题：默认 / 古希腊 --- */
+let themeAnimTimer;
 function applyTheme() {
   const greek = db.prefs.theme === 'greek';
+  document.body.classList.add('theme-anim');   // 切换动画：颜色平滑过渡 + 主区淡入
+  clearTimeout(themeAnimTimer);
+  themeAnimTimer = setTimeout(() => document.body.classList.remove('theme-anim'), 520);
   document.body.classList.toggle('greek', greek);
+  document.documentElement.classList.toggle('greek', greek);   // 让最外层视口滚动条也能套主题
   const btn = $('#theme-toggle');
   if (btn) btn.innerHTML = `<span class="nav-icon">${greek ? '⚱' : '🏛'}</span>${greek ? '恢复默认风格' : '忒洛波利斯'}`;
 }
@@ -1266,6 +1321,12 @@ function bindEvents() {
 
   // 访问权限与数据管理
   $('#auth-toggle').onclick = () => editUnlocked ? lockDown() : tryUnlock();
+  $('#side-toggle').onclick = () => {
+    const collapsed = document.body.classList.toggle('side-collapsed');
+    db.prefs.sideCollapsed = collapsed;
+    $('#side-toggle .nav-icon').textContent = collapsed ? '▸' : '◂';
+    save();
+  };
   $('#cloud-save').onclick = cloudSave;
   $('#export-data').onclick = exportData;
   $('#import-data').onclick = () => $('#import-file').click();
@@ -1337,6 +1398,24 @@ function bindEvents() {
     boardZoom = clamp(boardZoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12), BD_MIN, BD_MAX);
     save(); renderBoard();
   }, { passive: false });
+  // 按住 Ctrl 拖动平移整个板
+  const bcanvas = $('#board-canvas');
+  bcanvas.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || !e.ctrlKey || e.target.closest('.board-card')) return;
+    e.preventDefault();
+    const sx = e.clientX, sy = e.clientY, sl = bcanvas.scrollLeft, st = bcanvas.scrollTop;
+    bcanvas.classList.add('panning');
+    const mv = ev => { bcanvas.scrollLeft = sl - (ev.clientX - sx); bcanvas.scrollTop = st - (ev.clientY - sy); };
+    const up = () => {
+      bcanvas.classList.remove('panning');
+      bcanvas.removeEventListener('pointermove', mv);
+      bcanvas.removeEventListener('pointerup', up);
+      bcanvas.removeEventListener('pointercancel', up);
+    };
+    bcanvas.addEventListener('pointermove', mv);
+    bcanvas.addEventListener('pointerup', up);
+    bcanvas.addEventListener('pointercancel', up);
+  });
 
   // 库
   $('#library-search').oninput = renderLibrary;
@@ -1531,10 +1610,12 @@ function bindEvents() {
   $('#modal-close').onclick = $('#cancel-entry').onclick = closeModal;
   $('#modal-backdrop').onclick = e => { if (e.target === $('#modal-backdrop')) closeModal(); };
   document.addEventListener('keydown', e => {
+    if (e.key === 'Control') document.body.classList.add('ctrl-held');
     if (e.key !== 'Escape') return;
     if (tlExpanded) { tlExpanded = false; renderTimeline(); return; }
     closeModal();
   });
+  document.addEventListener('keyup', e => { if (e.key === 'Control') document.body.classList.remove('ctrl-held'); });
   $('#entry-form').onsubmit = e => {
     e.preventDefault();
     if (!editUnlocked) return notify('参观模式，无法保存');

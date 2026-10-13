@@ -166,3 +166,71 @@ body.unlocked .sidebar .brand{padding-bottom:18px}
 body:not(.unlocked) #cloud-save,body:not(.unlocked) #export-data,body:not(.unlocked) #import-data{display:none!important}
 /* --- 参观模式：隐藏码字入口 --- */
 body:not(.unlocked) .nav-item[data-view="writer"]{display:none!important}
+/* --- 参观模式：角色/线索库隐藏编辑栏后，目录占满整行 --- */
+body:not(.unlocked) .character-db-layout{grid-template-columns:1fr}
+
+/* --- 访客模式：库卡片就地展开全文 --- */
+.library-card .library-full{display:none;font-size:12px;line-height:1.9;color:#4a4a40;padding:10px 2px 4px;border-top:1px dashed var(--line);margin-top:10px}
+.library-card.expanded .library-full{display:block}
+.library-card.expanded .excerpt{display:none}
+body:not(.unlocked) .library-card{cursor:pointer}
+body:not(.unlocked) .library-card.expanded{cursor:default}
+
+/* --- 角色/线索卡片：相关树（一级故事，点开二级 clips） --- */
+.character-card .rel-panel{display:none;margin-top:11px;border-top:1px dashed var(--line);padding-top:10px}
+.character-card.show-rel .rel-panel{display:block}
+.character-card{cursor:pointer}
+.rel-tree{display:flex;flex-direction:column;gap:3px}
+.rel-story{display:flex;justify-content:space-between;align-items:center;font:600 11px var(--serif);color:#5c5d4b;cursor:pointer;padding:3px 6px;border-radius:3px}
+.rel-story:hover{background:#eeece4}
+.rel-count{font:9px var(--mono);color:#a19e90}
+.rel-clips{display:flex;flex-direction:column;gap:2px;padding-left:16px;margin:1px 0 5px}
+.rel-clips.hidden{display:none}
+.rel-clip{font-size:10px;color:#777669;cursor:pointer;padding:2px 6px;border-radius:3px}
+.rel-clip:hover{background:#eeece4;color:#414138}
+.rel-empty{color:#a19e90;font-size:10px}
+/* 跳转定位后的高亮闪烁 */
+.library-card.flash-hl,.story-card.flash-hl{border-color:#b26d50;box-shadow:0 0 0 3px #b26d5033}
+
+/* --- 主题切换动画：颜色平滑过渡 + 主区淡入 --- */
+body.theme-anim,body.theme-anim *{transition:background-color .5s ease,color .5s ease,border-color .5s ease,box-shadow .5s ease,text-shadow .5s ease!important}
+body.theme-anim .main-area{animation:theme-fade .5s ease}
+@keyframes theme-fade{0%{opacity:.3}100%{opacity:1}}
+
+/* --- 线索板：Ctrl 拖动平移 --- */
+body.ctrl-held .board-canvas{cursor:grab}
+.board-canvas.panning{cursor:grabbing;user-select:none}
+
+/* --- 全局滑动条：默认主题（细雅米色） --- */
+*{scrollbar-width:thin;scrollbar-color:#b9b39d transparent}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#c9c4b2,#a8a28c);border-radius:6px;border:2px solid transparent;background-clip:padding-box}
+::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#b26d50,#96603f);background-clip:padding-box}
+::-webkit-scrollbar-corner{background:transparent}
+
+/* --- 侧栏：收起/展开（图标原地不动，仅收窄宽度、淡出文字） --- */
+.sidebar,.main-area{transition:width .3s ease,margin-left .3s ease,max-width .3s ease}
+body.side-collapsed .sidebar{width:56px;overflow:hidden}
+body.side-collapsed .main-area{margin-left:56px;max-width:calc(100% - 56px)}
+body.side-collapsed .side-label,
+body.side-collapsed .side-divider,
+body.side-collapsed .stat-line,
+body.side-collapsed .font-size-switch{display:none}
+body.side-collapsed .brand-title em,
+body.side-collapsed .brand-title b,
+body.side-collapsed .brand-divider>span:first-child,
+body.side-collapsed .brand-divider>span:last-child{display:none}
+body.side-collapsed .brand-divider{justify-content:center}
+body.side-collapsed .brand-fleur{font-size:24px}
+body.side-collapsed .nav-item{font-size:0;gap:0}
+body.side-collapsed .nav-item .nav-icon{font-size:17px}
+
+/* --- 品牌区：古典封面式书名 + 鸢尾花分隔（整体居中） --- */
+.brand{justify-content:center;text-align:center}
+.brand .brand-title{display:flex;flex-direction:column;align-items:center}
+.brand .brand-title em{font:400 15px var(--serif);font-style:normal;letter-spacing:.18em;opacity:.8}
+.brand .brand-title b{font:600 15px var(--serif);letter-spacing:.18em;margin-top:4px}
+.brand-divider{display:flex;align-items:center;gap:8px;margin-top:10px;font-style:normal;width:100%}
+.brand-divider>span:first-child,.brand-divider>span:last-child{flex:1;height:1px;background:#97937f;opacity:.5}
+.brand-fleur{font-size:14px;line-height:1;color:#d6c39a;transition:font-size .3s ease}

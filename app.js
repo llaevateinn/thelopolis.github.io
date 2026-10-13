@@ -16,9 +16,9 @@ const ROW_H = 200;                                  // 时间线展开模式行�
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
 /* ============ 数据加载与迁移 ============ */
-function loadDB() {
-  let d = null;
-  try { d = JSON.parse(localStorage.getItem(KEY)); } catch {}
+function loadDB(fetched = null) {
+  let d = fetched;
+  try { if (!d) d = JSON.parse(localStorage.getItem(KEY)); } catch {}
   if (!d || !Array.isArray(d.stories) || !Array.isArray(d.passages)) {
     d = { stories: [], passages: [], characters: [], clues: [], links: [], hiddenLinks: [], timeRelations: [] };
   }
@@ -44,21 +44,70 @@ function loadDB() {
   });
   return d;
 }
-let db = loadDB();
+
+/* ============ 编辑权限（参观 / 编辑双模式） ============ */
+const PASS_HASH = 'ad877d45c9086c38bbb0d310a8bc46f0b414980ead7fef4fdf7c4cb569f78ab7';   // 口令的 SHA-256，明文不落盘
+let editUnlocked = false;
+let db = null;
+
+async function sha256(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+/* 启动：解锁用户用本地数据；访客拉取仓库里的 archive.json（始终看到最新发布版） */
+async function boot() {
+  let local = null;
+  try { local = JSON.parse(localStorage.getItem(KEY)); } catch {}
+  editUnlocked = !!local?.prefs?.unlocked;
+  let d = local;
+  if (!editUnlocked) {
+    try { const r = await fetch('archive.json', { cache: 'no-store' }); if (r.ok) d = await r.json(); } catch {}
+  }
+  db = loadDB(d);
+  activeStoryId = db.stories[0]?.id || null;
+  tlZoom = clamp(db.prefs.tlZoom ?? 1, TL_MIN, TL_MAX);
+  boardZoom = clamp(db.prefs.boardZoom ?? 1, BD_MIN, BD_MAX);
+  bindEvents();
+  applyTheme();
+  applyFontSize();
+  applyEditMode();
+  render();
+}
+async function tryUnlock() {
+  const input = prompt('输入编辑口令：');
+  if (input == null) return;
+  if (await sha256(input) === PASS_HASH) {
+    editUnlocked = true;
+    db.prefs.unlocked = true;
+    save(); applyEditMode(); renderWriter();
+    notify('已进入编辑模式');
+  } else notify('口令错误');
+}
+function lockDown() {
+  if (!confirm('退出编辑模式？将恢复为参观模式，并重新加载已发布的版本。')) return;
+  if (db?.prefs) { delete db.prefs.unlocked; try { localStorage.setItem(KEY, JSON.stringify(db)); } catch {} }
+  location.reload();
+}
+function applyEditMode() {
+  document.body.classList.toggle('unlocked', editUnlocked);
+  const btn = $('#auth-toggle');
+  const shackle = editUnlocked ? 'M5.5 7V5a2.5 2.5 0 0 1 5-.6' : 'M5.5 7V5a2.5 2.5 0 0 1 5 0v2';
+  if (btn) btn.innerHTML = `<span class="nav-icon"><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><rect x="3.5" y="7" width="9" height="6.5" rx="1.2"/><path d="${shackle}"/></svg></span>${editUnlocked ? '退出编辑' : '进入编辑'}`;
+}
 
 /* ============ 全局状态 ============ */
 let activeView = 'timeline';
 let libraryTab = 'passages';
-let activeStoryId = db.stories[0]?.id || null;
+let activeStoryId = null;   // boot() 中依数据赋值
 let selectedBoard = [];
 let selectedTimeNodes = [];
 let tlPeekId = null;           // 未展开状态点击放大的节点
 let toastTimer, writerSaveTimer;
 let lastWriterEditor = null;
 let writerSectionFilter = 'all';   // 码字页：正文/大纲筛选
-let tlZoom = clamp(db.prefs.tlZoom ?? 1, TL_MIN, TL_MAX);
+let tlZoom = 1;              // boot() 中依数据赋值
 let tlExpanded = false;
-let boardZoom = clamp(db.prefs.boardZoom ?? 1, BD_MIN, BD_MAX);
+let boardZoom = 1;           // boot() 中依数据赋值
 let timeNodeEls = new Map();   // 时间线节点元素缓存（实现展开动画）
 let tlRowCount = 1;            // 展开模式当前行数（幽灵行轴线吸附用）
 
@@ -78,6 +127,7 @@ function storyColor(sid) { const i = db.stories.findIndex(s => s.id === sid); re
 function emptyHTML(title, sub, icon = '✳') { return `<div class="empty-state"><span class="empty-icon">${icon}</span><strong>${esc(title)}</strong><p>${esc(sub)}</p></div>`; }
 function notify(s) { const t = $('#toast'); t.textContent = s; t.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2200); }
 function save() {
+  if (!editUnlocked) return;   // 参观模式：任何交互都不落盘
   db.prefs = { ...(db.prefs || {}), tlZoom, boardZoom };
   localStorage.setItem(KEY, JSON.stringify(db));
   $('.save-state').innerHTML = '<i></i> 自动保存';
@@ -238,6 +288,7 @@ function attachTimeNodeHandlers(el) {
   });
   el.addEventListener('pointermove', e => {
     if (!drag || !el.hasPointerCapture(e.pointerId)) return;
+    if (!editUnlocked) return;   // 参观模式：禁止拖动，但保留点击选中/放大
     const dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
     if (!drag.moved && Math.hypot(dx, dy) > 3) { drag.moved = true; el.classList.add('dragging'); }
     if (!drag.moved) return;
@@ -619,7 +670,7 @@ function applyBoardZoom(w, h) {
 }
 function attachBoardCardHandlers(node, p) {
   node.addEventListener('pointerdown', e => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 || !editUnlocked) return;   // 参观模式：禁止拖动卡片
     const start = { x: e.clientX, y: e.clientY };
     const orig = p.boardPosition || { x: parseFloat(node.style.left) || 0, y: parseFloat(node.style.top) || 0 };
     let moved = false;
@@ -651,6 +702,7 @@ function attachBoardCardHandlers(node, p) {
   });
   node.addEventListener('click', e => {
     if (node.dataset.dragMoved) { delete node.dataset.dragMoved; e.preventDefault(); e.stopImmediatePropagation(); return; }
+    if (!editUnlocked) return;   // 参观模式：点击不改关联，双击仍可读
     if (!selectedBoard.length) { selectedBoard = [p.id]; renderBoard(); return; }
     if (selectedBoard[0] === p.id) { selectedBoard = []; renderBoard(); return; }
     toggleBoardLink(selectedBoard[0], p.id);
@@ -676,6 +728,7 @@ function drawConnections() {
     if (link.auto) line.classList.add('auto');
     line.style.pointerEvents = 'stroke';
     line.addEventListener('click', () => {
+      if (!editUnlocked) return;   // 参观模式：不允许删关联
       const key = pairKey(link.a, link.b);
       db.links = db.links.filter(l => pairKey(l.a, l.b) !== key);
       if (link.auto && !db.hiddenLinks.includes(key)) db.hiddenLinks.push(key);
@@ -784,7 +837,7 @@ function renderWriter(focusClipId = null) {
   select.value = activeStoryId || '';
   setWriterSpacing();
   const noStory = !activeStoryId;
-  title.disabled = noStory; select.disabled = noStory; add.disabled = noStory;
+  title.disabled = noStory || !editUnlocked; select.disabled = noStory; add.disabled = noStory;
   $('#writer-delete-story').disabled = noStory;
   if (noStory) {
     title.value = '';
@@ -803,7 +856,7 @@ function renderWriter(focusClipId = null) {
       ...charsFor(p).map(c => `<span class="tag ${kindClass(c.role)}">${esc(c.name)} · ${kindLabel(c.role)}</span>`),
       ...cluesFor(p).map(c => `<span class="tag clue"># ${esc(c.name)}</span>`)
     ].join('');
-    return `<div class="writer-section-row" data-clip-row="${esc(p.id)}"><article class="writer-section ${p.collapsed ? 'is-collapsed' : ''} ${p.section === 'outline' ? 'is-outline' : ''}" data-clip-section="${esc(p.id)}"><header class="writer-section-head"><button type="button" class="clip-drag-handle" draggable="true" title="拖拽调整 clip 顺序" aria-label="拖拽调整 clip 顺序">⠿</button><span class="writer-section-index">CLIP ${String(i + 1).padStart(2, '0')}</span><span class="writer-clip-name">${esc(p.title)}</span><span class="tag ${p.section === 'outline' ? 'god' : ''}">${p.section === 'outline' ? '大纲' : '正文'}</span><button type="button" class="writer-collapse-button" data-clip-collapse="${esc(p.id)}" aria-expanded="${!p.collapsed}">${p.collapsed ? '展开' : '收起'}</button></header><div class="clip-writing" data-clip-body="${esc(p.id)}" contenteditable="true" spellcheck="false" data-placeholder="从这里开始写作…">${p.html ? sanitizeClipHtml(p.html) : writerBodyMarkup(p.body || '')}</div><div class="writer-section-meta">${meta || '<span class="tag">尚未添加时间或角色标注</span>'}</div><div class="writer-clip-preview" aria-hidden="true"></div></article><div class="writer-outside-actions"><button class="writer-mini-button" data-add-below="${esc(p.id)}">↓ 下方添加 clip</button><button class="writer-mini-button" data-clip-meta="${esc(p.id)}">时间与角色</button><button class="writer-mini-button" data-detect="${esc(p.id)}">识别角色</button><button class="writer-mini-button" data-toggle-section="${esc(p.id)}">${p.section === 'outline' ? '转为正文' : '转为大纲'}</button><button class="writer-mini-button writer-clip-delete" data-delete-clip="${esc(p.id)}">删除</button></div></div>`;
+    return `<div class="writer-section-row" data-clip-row="${esc(p.id)}"><article class="writer-section ${p.collapsed ? 'is-collapsed' : ''} ${p.section === 'outline' ? 'is-outline' : ''}" data-clip-section="${esc(p.id)}"><header class="writer-section-head"><button type="button" class="clip-drag-handle" draggable="true" title="拖拽调整 clip 顺序" aria-label="拖拽调整 clip 顺序">⠿</button><span class="writer-section-index">CLIP ${String(i + 1).padStart(2, '0')}</span><span class="writer-clip-name">${esc(p.title)}</span><span class="tag ${p.section === 'outline' ? 'god' : ''}">${p.section === 'outline' ? '大纲' : '正文'}</span><button type="button" class="writer-collapse-button" data-clip-collapse="${esc(p.id)}" aria-expanded="${!p.collapsed}">${p.collapsed ? '展开' : '收起'}</button></header><div class="clip-writing" data-clip-body="${esc(p.id)}" data-placeholder="从这里开始写作…" contenteditable="${editUnlocked}" spellcheck="false">${p.html ? sanitizeClipHtml(p.html) : writerBodyMarkup(p.body || '')}</div><div class="writer-section-meta">${meta || '<span class="tag">尚未添加时间或角色标注</span>'}</div><div class="writer-clip-preview" aria-hidden="true"></div></article><div class="writer-outside-actions"><button class="writer-mini-button" data-add-below="${esc(p.id)}">↓ 下方添加 clip</button><button class="writer-mini-button" data-clip-meta="${esc(p.id)}">时间与角色</button><button class="writer-mini-button" data-detect="${esc(p.id)}">识别角色</button><button class="writer-mini-button" data-toggle-section="${esc(p.id)}">${p.section === 'outline' ? '转为正文' : '转为大纲'}</button><button class="writer-mini-button writer-clip-delete" data-delete-clip="${esc(p.id)}">删除</button></div></div>`;
   }).join('') : `<div class="writer-empty"><b>故事文档还没有 clip</b><p>在下方新增 clip。每个 clip 会作为「未入线」圆点出现在时间线旁，手动拖入时间线。</p></div>`;
   if (renamed) { save(); renderTimeline(); renderLibrary(); renderBoard(); }
   // 折叠预览文本
@@ -1127,6 +1180,67 @@ function applyTheme() {
   if (btn) btn.innerHTML = `<span class="nav-icon">${greek ? '⚱' : '🏛'}</span>${greek ? '恢复默认风格' : '忒洛波利斯'}`;
 }
 
+/* --- 云端保存：用 GitHub PAT 把数据写回仓库 archive.json（令牌只存本机） --- */
+async function cloudSave() {
+  if (!editUnlocked) return;
+  let repo = localStorage.getItem('tpl_gh_repo');
+  let token = localStorage.getItem('tpl_gh_token');
+  if (!repo) {
+    repo = prompt('GitHub 仓库（形如 username/repo）：');
+    if (!repo) return;
+    localStorage.setItem('tpl_gh_repo', repo.trim());
+  }
+  if (!token) {
+    token = prompt('GitHub 个人令牌（PAT，只授本仓库 contents 写权限；仅保存在此浏览器）：');
+    if (!token) return;
+    localStorage.setItem('tpl_gh_token', token.trim());
+  }
+  notify('正在保存到云端…');
+  try {
+    const api = `https://api.github.com/repos/${repo.trim()}/contents/archive.json`;
+    const head = { Authorization: `Bearer ${token.trim()}`, Accept: 'application/vnd.github+json' };
+    let sha;
+    const cur = await fetch(api, { headers: head });
+    if (cur.ok) sha = (await cur.json()).sha;
+    else if (cur.status === 401 || cur.status === 403) { localStorage.removeItem('tpl_gh_token'); throw new Error('auth'); }
+    const pub = { ...db, prefs: { ...db.prefs, unlocked: undefined } };
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(pub, null, 1))));
+    const res = await fetch(api, { method: 'PUT', headers: head, body: JSON.stringify({ message: '更新故事档案', content, ...(sha ? { sha } : {}) }) });
+    if (!res.ok) throw new Error(await res.text());
+    notify('已保存到云端，GitHub Pages 正在重新部署（几分钟后访客可见）');
+  } catch (e) {
+    console.error(e);
+    notify('云端保存失败：请检查仓库名与令牌权限');
+  }
+}
+
+/* --- 本地备份：导出 / 导入 JSON --- */
+function exportData() {
+  if (!editUnlocked) return;
+  const pub = { ...db, prefs: { ...db.prefs, unlocked: undefined } };
+  const blob = new Blob([JSON.stringify(pub, null, 1)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `忒洛波利斯-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  notify('已导出备份文件');
+}
+function importData(file) {
+  if (!editUnlocked || !file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const d = JSON.parse(reader.result);
+      if (!Array.isArray(d.stories) || !Array.isArray(d.passages)) throw new Error('bad');
+      d.prefs = { ...(d.prefs || {}), unlocked: true };
+      localStorage.setItem(KEY, JSON.stringify(d));
+      location.reload();
+    } catch { notify('导入失败：不是有效的档案文件'); }
+  };
+  reader.readAsText(file);
+}
+
 /* --- 字号三档（小 / 标准 / 大） --- */
 const FONT_ZOOM = { s: '0.92', m: '', l: '1.12' };
 function applyFontSize() {
@@ -1148,6 +1262,13 @@ function bindEvents() {
     db.prefs.fontSize = b.dataset.fs;
     save(); applyFontSize();
   });
+
+  // 访问权限与数据管理
+  $('#auth-toggle').onclick = () => editUnlocked ? lockDown() : tryUnlock();
+  $('#cloud-save').onclick = cloudSave;
+  $('#export-data').onclick = exportData;
+  $('#import-data').onclick = () => $('#import-file').click();
+  $('#import-file').onchange = e => { importData(e.target.files[0]); e.target.value = ''; };
   $$('[data-switch="library"]').forEach(b => b.onclick = () => switchView('library'));
   $('#add-passage-top').onclick = () => openPassage();
   $('#add-story').onclick = createStoryInWriter;
@@ -1183,6 +1304,7 @@ function bindEvents() {
     if ([...(e.dataTransfer?.types || [])].includes('text/plain')) e.preventDefault();
   });
   scroll.addEventListener('drop', e => {
+    if (!editUnlocked) return;   // 参观模式：不允许拖入时间线
     const pid = e.dataTransfer.getData('text/plain');
     const p = clip(pid);
     if (!p) return;
@@ -1414,6 +1536,7 @@ function bindEvents() {
   });
   $('#entry-form').onsubmit = e => {
     e.preventDefault();
+    if (!editUnlocked) return notify('参观模式，无法保存');
     const pid = $('#entry-id').value, prior = pid ? clip(pid) : null;
     const title = $('#entry-title').value.trim();
     if (!title && !prior) return;
@@ -1459,7 +1582,4 @@ function bindEvents() {
 }
 
 /* ============ 启动 ============ */
-bindEvents();
-applyTheme();
-applyFontSize();
-render();
+boot();

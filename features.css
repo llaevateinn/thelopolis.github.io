@@ -127,3 +127,40 @@
 .font-size-switch span{font-size:9px;margin-right:3px}
 .font-size-switch button{flex:1;border:1px solid currentColor;border-radius:3px;background:transparent;color:inherit;font-size:9px;padding:4px 2px;cursor:pointer;opacity:.65}
 .font-size-switch button.on{opacity:1;background:#ffffff1c;font-weight:600}
+
+/* --- 参观模式：隐藏一切编辑入口 --- */
+body:not(.unlocked) .edit-only,
+body:not(.unlocked) #add-passage-top,
+body:not(.unlocked) #add-story,
+body:not(.unlocked) #timeline-pool,
+body:not(.unlocked) #interval-panel,
+body:not(.unlocked) #writer-split-float,
+body:not(.unlocked) .writer-outside-actions,
+body:not(.unlocked) #writer-add-section,
+body:not(.unlocked) #writer-new-story,
+body:not(.unlocked) #writer-delete-story,
+body:not(.unlocked) #writer-save,
+body:not(.unlocked) #writer-bold,
+body:not(.unlocked) .clip-drag-handle,
+body:not(.unlocked) .character-editor,
+body:not(.unlocked) .character-card-actions,
+body:not(.unlocked) #detect-all-characters,
+body:not(.unlocked) #merge-duplicates,
+body:not(.unlocked) #clear-selection,
+body:not(.unlocked) .character-add,
+body:not(.unlocked) .modal-actions{display:none!important}
+body:not(.unlocked) #entry-form :is(input,textarea,select){pointer-events:none;opacity:.6}
+body:not(.unlocked) .character-filter-bar{pointer-events:auto}
+
+/* --- 侧栏：内容过多时内部滚动（编辑模式按钮更多） --- */
+.sidebar{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#4a4a40 transparent}
+.sidebar::-webkit-scrollbar{width:5px}
+.sidebar::-webkit-scrollbar-thumb{background:#4a4a40;border-radius:3px}
+.sidebar::-webkit-scrollbar-track{background:transparent}
+.sidebar .nav-item{flex-shrink:0}
+.sidebar .side-divider{flex-shrink:0;margin:16px 8px 14px}
+.sidebar .sidebar-note{flex-shrink:0}
+body.unlocked .sidebar .nav-item{padding:8px 10px}
+body.unlocked .sidebar .brand{padding-bottom:18px}
+/* 参观模式下"进入编辑"按钮顶到底部上方留白自然 */
+body:not(.unlocked) #cloud-save,body:not(.unlocked) #export-data,body:not(.unlocked) #import-data{display:none!important}

@@ -1295,7 +1295,9 @@ async function cloudSave() {
     let sha;
     const cur = await fetch(api, { headers: head });
     if (cur.ok) sha = (await cur.json()).sha;
-    else if (cur.status === 401 || cur.status === 403) { localStorage.removeItem('tpl_gh_token'); throw new Error('auth'); }
+    else if (cur.status === 401) { localStorage.removeItem('tpl_gh_token'); throw new Error('401：令牌无效或已过期'); }
+    else if (cur.status === 403) { localStorage.removeItem('tpl_gh_token'); throw new Error('403：令牌没有这个仓库的访问权限（Contents 需设为 Read and write）'); }
+    else if (cur.status !== 404) throw new Error(`读取仓库信息失败（HTTP ${cur.status}）`);   // 404 = archive.json 还没创建过，属正常
     const pub = { ...db, prefs: { ...db.prefs, unlocked: undefined } };
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(pub, null, 1))));
     const res = await fetch(api, { method: 'PUT', headers: head, body: JSON.stringify({ message: '更新故事档案', content, ...(sha ? { sha } : {}) }) });
@@ -1303,8 +1305,9 @@ async function cloudSave() {
     notify(`已保存到 ${repo.trim()}，GitHub Pages 正在重新部署（几分钟后访客可见）`);
   } catch (e) {
     console.error(e);
+    const detail = String(e?.message || e).slice(0, 300);
     // 失败后可重设：清掉已存的仓库名与令牌，下次重新输入（仓库留空则按网址自动推断）
-    if (confirm('云端保存失败：可能是仓库名不对，或令牌失效/权限不足。\n\n点「确定」重新设置仓库与令牌；点「取消」稍后再试。')) {
+    if (confirm(`云端保存失败：${detail}\n\n点「确定」重新设置仓库与令牌；点「取消」稍后再试。`)) {
       localStorage.removeItem('tpl_gh_repo');
       localStorage.removeItem('tpl_gh_token');
       const r = prompt('GitHub 仓库（形如 username/repo；留空则按当前网址自动推断）：');

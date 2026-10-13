@@ -164,3 +164,5 @@ body.unlocked .sidebar .nav-item{padding:8px 10px}
 body.unlocked .sidebar .brand{padding-bottom:18px}
 /* 参观模式下"进入编辑"按钮顶到底部上方留白自然 */
 body:not(.unlocked) #cloud-save,body:not(.unlocked) #export-data,body:not(.unlocked) #import-data{display:none!important}
+/* --- 参观模式：隐藏码字入口 --- */
+body:not(.unlocked) .nav-item[data-view="writer"]{display:none!important}

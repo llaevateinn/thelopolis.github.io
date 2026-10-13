@@ -1161,6 +1161,7 @@ function closeModal() {
 /* ============ 视图切换 ============ */
 const CRUMBS = { timeline: '时间线', writer: '码字', board: '线索关系板', library: '故事与 clips', characters: '角色数据库', clues: '线索' };
 function switchView(name) {
+  if (name === 'writer' && !editUnlocked) return;   // 参观模式不开放码字页
   activeView = name;
   $$('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
   $$('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.view === name));

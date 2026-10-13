@@ -173,7 +173,7 @@ body:not(.unlocked) .character-db-layout{grid-template-columns:1fr}
 .library-card .library-full{display:none;font-size:12px;line-height:1.9;color:#4a4a40;padding:10px 2px 4px;border-top:1px dashed var(--line);margin-top:10px}
 .library-card.expanded .library-full{display:block}
 .library-card.expanded .excerpt{display:none}
-body:not(.unlocked) .library-card{cursor:pointer}
+body:not(.unlocked) .library-card,.library-card{cursor:pointer}
 body:not(.unlocked) .library-card.expanded{cursor:default}
 
 /* --- 角色/线索卡片：相关树（一级故事，点开二级 clips） --- */
@@ -234,3 +234,69 @@ body.side-collapsed .nav-item .nav-icon{font-size:17px}
 .brand-divider{display:flex;align-items:center;gap:8px;margin-top:10px;font-style:normal;width:100%}
 .brand-divider>span:first-child,.brand-divider>span:last-child{flex:1;height:1px;background:#97937f;opacity:.5}
 .brand-fleur{font-size:14px;line-height:1;color:#d6c39a;transition:font-size .3s ease}
+
+/* --- 侧栏右缘：双线 + 书脊投影（默认主题：橄榄灰） --- */
+.sidebar{border-right:1px solid #55564a;box-shadow:6px 0 18px #2e30242a}
+.sidebar::after{content:'';position:absolute;top:0;bottom:0;right:3px;width:1px;background:#6a6b5c;opacity:.8}
+
+/* --- 编辑模式：收紧侧栏间距，免滚动完整显示 --- */
+body.unlocked .sidebar{padding-top:16px}
+body.unlocked .brand{padding-bottom:14px}
+body.unlocked .brand-divider{margin-top:6px}
+body.unlocked .side-label{padding-bottom:6px}
+body.unlocked .sidebar .nav-item{padding:6px 10px;font-size:12px}
+body.unlocked .sidebar .side-divider{margin:9px 8px 8px}
+body.unlocked .stat-line{padding:4px 10px}
+body.unlocked .font-size-switch{margin-top:4px}
+
+/* --- 就地展开全文：时间线索引行 + 故事卡 + 全部收起悬浮钮 --- */
+.passage-row{position:relative}
+.row-full{display:none;grid-column:1/-1;font-size:12px;line-height:1.9;color:#4a4a40;border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
+.passage-row.expanded .row-full{display:block}
+.row-collapse{display:none;position:absolute;top:8px;right:8px;border:1px solid var(--line);background:#f1efe7;border-radius:3px;font-size:9px;padding:3px 8px;cursor:pointer;color:#777669;box-shadow:0 4px 10px #37372e18;z-index:2}
+.passage-row.expanded .row-collapse{display:block}
+.row-full-foot{display:flex;justify-content:flex-end;margin-top:8px}
+.story-card{position:relative}
+.story-card .story-full{display:none;grid-column:1/-1;border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
+.story-card.expanded .story-full{display:block}
+.story-clip-block{margin-bottom:14px}
+.story-clip-block>b{font:600 12px var(--serif);color:#414138}
+.story-clip-body{font-size:12px;line-height:1.9;color:#4a4a40;margin-top:5px}
+#collapse-all-float{position:fixed;right:26px;bottom:26px;z-index:50;border:1px solid var(--line);background:#fffefa;border-radius:20px;padding:9px 18px;font-size:11px;cursor:pointer;box-shadow:0 10px 26px #37372e26;color:#5c5d4b}
+#collapse-all-float.hidden{display:none}
+
+/* --- 展开卡片的悬浮「收起」键：视口右侧固定，跟随卡片 --- */
+.float-collapse{position:fixed;z-index:49;border:1px solid var(--line);background:#fffefa;border-radius:16px;padding:7px 14px;font-size:10px;cursor:pointer;box-shadow:0 8px 20px #37372e26;color:#5c5d4b}
+
+/* --- 线索板：菱形织纹背景 + 文本不可选中 + 选中卡片底栏 --- */
+.board-canvas{background-image:repeating-linear-gradient(45deg,#e3dfd2 0 1px,transparent 1px 24px),repeating-linear-gradient(-45deg,#e3dfd2 0 1px,transparent 1px 24px)}
+.board-card,.board-card *{user-select:none}
+.board-card-foot{margin-top:9px;padding-top:8px;border-top:1px dashed var(--line);display:flex;justify-content:flex-end}
+.section-head-actions{display:flex;gap:12px;align-items:center}
+/* --- 线索板：波点换星点（随机散布、随机大小、柔和光晕） --- */
+.board-canvas{
+  background-image:
+    radial-gradient(1.6px 1.6px at 30px 42px,#c5bfa9 0%,transparent 65%),
+    radial-gradient(1px 1px at 96px 138px,#b5ad94 0%,transparent 65%),
+    radial-gradient(2.4px 2.4px at 158px 64px,#c5bfa9 0%,#b5ad9480 45%,transparent 70%),
+    radial-gradient(1.2px 1.2px at 214px 156px,#b5ad94 0%,transparent 65%),
+    radial-gradient(1.8px 1.8px at 64px 208px,#c5bfa9 0%,transparent 65%),
+    radial-gradient(1px 1px at 188px 232px,#b5ad94 0%,transparent 65%),
+    repeating-linear-gradient(45deg,#e3dfd2 0 1px,transparent 1px 24px),
+    repeating-linear-gradient(-45deg,#e3dfd2 0 1px,transparent 1px 24px);
+  background-size:260px 260px,310px 310px,350px 350px,290px 290px,330px 330px,250px 250px,auto,auto;
+}
+
+/* --- 时间轴：与线索板相同的星点 + 菱格背景 --- */
+.timeline-scroll{
+  background-image:
+    radial-gradient(1.6px 1.6px at 30px 42px,#c5bfa9 0%,transparent 65%),
+    radial-gradient(1px 1px at 96px 138px,#b5ad94 0%,transparent 65%),
+    radial-gradient(2.4px 2.4px at 158px 64px,#c5bfa9 0%,#b5ad9480 45%,transparent 70%),
+    radial-gradient(1.2px 1.2px at 214px 156px,#b5ad94 0%,transparent 65%),
+    radial-gradient(1.8px 1.8px at 64px 208px,#c5bfa9 0%,transparent 65%),
+    radial-gradient(1px 1px at 188px 232px,#b5ad94 0%,transparent 65%),
+    repeating-linear-gradient(45deg,#e3dfd2 0 1px,transparent 1px 24px),
+    repeating-linear-gradient(-45deg,#e3dfd2 0 1px,transparent 1px 24px);
+  background-size:260px 260px,310px 310px,350px 350px,290px 290px,330px 330px,250px 250px,auto,auto;
+}

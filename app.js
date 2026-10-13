@@ -6,6 +6,7 @@
 
 /* ============ 常量 ============ */
 const KEY = 'thelopolis-story-archive-v1';
+const SITE_VERSION = '2026-10-14-r6';   // 文件新旧校验：控制台会打印
 const KINDS = { god: '神', human: '人类', animal: '动物', other: '其他' };
 const kindClass = k => (KINDS[k] ? k : 'other');
 const kindLabel = k => KINDS[k] || '其他';
@@ -42,6 +43,12 @@ function loadDB(fetched = null) {
     }
     p.clueIds ||= []; p.section ||= 'body'; p.characters ||= [];
   });
+  // 迁移④：clip 标题末尾的序号（1/5）→ 数字全角（１/５），斜杠保持半角；竖排显示时数字保持正向直立
+  d.passages.forEach(p => {
+    if (typeof p.title === 'string') {
+      p.title = p.title.replace(/（([0-9０-９]+)[\/／]([0-9０-９]+)）$/, (m, a, b) => `（${fwNum(a)}/${fwNum(b)}）`);
+    }
+  });
   return d;
 }
 
@@ -74,6 +81,7 @@ async function boot() {
   $('#side-toggle .nav-icon').textContent = db.prefs.sideCollapsed ? '▸' : '◂';
   applyEditMode();
   render();
+  console.log('忒洛波利斯版本：' + SITE_VERSION);
 }
 async function tryUnlock() {
   const input = prompt('输入编辑口令：');
@@ -99,7 +107,7 @@ function applyEditMode() {
 
 /* ============ 全局状态 ============ */
 let activeView = 'timeline';
-let libraryTab = 'passages';
+let libraryTab = 'stories';
 let activeStoryId = null;   // boot() 中依数据赋值
 let selectedBoard = [];
 let selectedTimeNodes = [];
@@ -113,10 +121,86 @@ let boardZoom = 1;           // boot() 中依数据赋值
 let timeNodeEls = new Map();   // 时间线节点元素缓存（实现展开动画）
 let tlRowCount = 1;            // 展开模式当前行数（幽灵行轴线吸附用）
 let poolDragId = null;         // 正在从未入线池拖出的 clip id
+const expandedCards = new Set();   // 就地展开全文的卡片：'ls:故事' 'lc:库clip' 'tl:索引clip'
+let tlIndexSort = 'select';        // 索引排序：select=最新选择在前 / time=按时间
+function viewExpandKeys() {
+  const prefix = activeView === 'library' ? ['ls:', 'lc:'] : activeView === 'timeline' ? ['tl:'] : null;
+  if (!prefix) return [];
+  return [...expandedCards].filter(k => prefix.some(p => k.startsWith(p)));
+}
+function updateCollapseAllBtn() {
+  $('#collapse-all-float')?.classList.toggle('hidden', viewExpandKeys().length < 2);
+}
+/* 展开卡片的悬浮「收起」键：固定于视口右侧、跟随各自卡片，滚到哪都点得到 */
+const floatCollapses = new Map();
+function updateFloatCollapses() {
+  // body.zoom（字号设置）坐标系换算：getBoundingClientRect 与 innerHeight 同为渲染坐标；style.top/left 是布局坐标，渲染时会被 ×zoom，故赋值要 ÷zoom
+  const z = parseFloat(document.body.style.zoom) || 1;
+  const vh = window.innerHeight, vw = window.innerWidth;
+  const items = [];
+  if (activeView === 'timeline') {
+    $$('#timeline-list .passage-row.expanded').forEach(el => items.push({ key: 'tl:' + el.dataset.pid, el }));
+  } else if (activeView === 'library') {
+    $$('#library-content .story-card.expanded').forEach(el => items.push({ key: 'ls:' + el.dataset.storyOpen, el }));
+    $$('#library-content .library-card.expanded').forEach(el => items.push({ key: 'lc:' + el.dataset.edit, el }));
+  }
+  [...floatCollapses.keys()].forEach(k => {
+    if (!items.some(x => x.key === k)) { floatCollapses.get(k).remove(); floatCollapses.delete(k); }
+  });
+  items.forEach(({ key, el }, idx) => {
+    let btn = floatCollapses.get(key);
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'float-collapse';
+      btn.textContent = '收起';
+      btn.onclick = () => {
+        expandedCards.delete(key);
+        renderLibrary(); renderTimelineList(); updateCollapseUI();
+      };
+      document.body.appendChild(btn);
+      floatCollapses.set(key, btn);
+    }
+    const r = el.getBoundingClientRect();
+    if (r.bottom < 60 || r.top > vh) { btn.style.display = 'none'; return; }
+    btn.style.display = '';
+    // 水平：始终与「全部收起」所在列左对齐（它隐藏时临时量出它应在的位置）
+    const allBtn = $('#collapse-all-float');
+    const wasHidden = allBtn.classList.contains('hidden');
+    if (wasHidden) allBtn.classList.remove('hidden');
+    const ar = allBtn.getBoundingClientRect();
+    if (wasHidden) allBtn.classList.add('hidden');
+    const bw = btn.getBoundingClientRect().width || 60;
+    btn.style.left = '';
+    btn.style.right = ((vw - ar.left - bw) / z) + 'px';
+    // 垂直：卡底可见则跟随卡底，否则停靠视口右下角（多个向上堆叠）
+    if (r.bottom <= vh) btn.style.top = (clamp(r.bottom - 44, 64, vh - 44) / z) + 'px';
+    else btn.style.top = ((vh - 44 - idx * 40) / z) + 'px';
+    // 与「全部收起」冲突时：钉在它正上方
+    if (!wasHidden) {
+      const br = btn.getBoundingClientRect();
+      if (br.right > ar.left - 6 && br.left < ar.right + 6 && br.bottom > ar.top - 6) {
+        btn.style.top = ((ar.top - 42) / z) + 'px';
+      }
+    }
+  });
+}
+function updateCollapseUI() { updateCollapseAllBtn(); updateFloatCollapses(); }
+/* 滚动/缩放时逐帧合并：一帧内多次触发只执行一次，避免滚动过程中反复读写布局 */
+let floatCollapsesScheduled = false;
+function scheduleFloatCollapses() {
+  if (floatCollapsesScheduled) return;
+  floatCollapsesScheduled = true;
+  requestAnimationFrame(() => { floatCollapsesScheduled = false; updateFloatCollapses(); });
+}
+window.addEventListener('scroll', scheduleFloatCollapses, { passive: true });
+window.addEventListener('resize', scheduleFloatCollapses);
 
 /* ============ 基础工具 ============ */
 function $(q, r = document) { return r.querySelector(q); }
 function $$(q, r = document) { return [...r.querySelectorAll(q)]; }
+/* 数字与斜杠转全角：竖排标题中全角字符保持正向直立，不会整段侧躺 */
+function fwNum(v) { return String(v).replace(/[0-9]/g, d => String.fromCharCode(0xFF10 + Number(d))); }
 function esc(s = '') { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 function id() { return crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2); }
 function story(sid) { return db.stories.find(s => s.id === sid); }
@@ -235,22 +319,6 @@ function highlightRow(pid, on) {
 function highlightNode(pid, on) {
   timeNodeEls.get(pid)?.classList.toggle('hl', on);
 }
-
-/* --- 索引行悬浮：正文预览气泡 --- */
-let clipTip = null;
-function showClipTip(row) {
-  const p = clip(row.dataset.pid); if (!p) return;
-  if (!clipTip) { clipTip = document.createElement('div'); clipTip.className = 'clip-tip'; document.body.appendChild(clipTip); }
-  const body = (p.body || '').trim();
-  clipTip.innerHTML = `<b>${esc(p.title || '未命名 clip')}</b><p>${esc(body ? body.slice(0, 140) + (body.length > 140 ? '…' : '') : '（暂无正文）')}</p>`;
-  const r = row.getBoundingClientRect();
-  const above = r.top > 170;
-  clipTip.style.left = Math.max(12, Math.min(r.left, window.innerWidth - 300)) + 'px';
-  clipTip.style.top = (above ? r.top : r.bottom) + 'px';
-  clipTip.classList.toggle('below', !above);
-  clipTip.classList.add('on');
-}
-function hideClipTip() { clipTip?.classList.remove('on'); }
 
 /* --- 节点元素（缓存复用，展开时做位移动画） --- */
 function ensureTimeNode(p) {
@@ -571,7 +639,7 @@ function renderTimeline() {
     el.querySelector('.node-dot').style.background = storyColor(p.storyId);
     // 标题两份：完整版（卡片展开时显示）与缩略版（小竖卡显示），由 CSS 按卡片状态切换
     const bEl = el.querySelector('.node-card b');
-    const tm = /^(.+)（(\d+\/\d+)）$/.exec(p.title || '');
+    const tm = /^(.+)（([0-9０-９]+[\/／][0-9０-９]+)）$/.exec(p.title || '');
     if (tm && tm[1].length > 6) {
       bEl.innerHTML = `<span class="t-full">${esc(tm[1])}</span><span class="t-short">${esc(tm[1].slice(0, 6))}……</span><span class="t-num">（${esc(tm[2])}）</span>`;
     } else bEl.textContent = p.title;
@@ -586,14 +654,7 @@ function renderTimeline() {
   scroll.style.height = tlExpanded ? (rowCount * ROW_H + 70) + 'px' : '';
 
   // 索引列表：时间轴上有选中节点时只显示选中项；否则显示前 10 条
-  hideClipTip();   // 列表重绘前收掉可能残留的正文预览
-  const indexRows = selectedTimeNodes.length ? placed.filter(p => selectedTimeNodes.includes(p.id)) : placed.slice(0, 10);
-  $('#timeline-list').innerHTML = indexRows.map(rowHTML).join('');
-  $$('#timeline-list .passage-row').forEach(row => {
-    row.addEventListener('click', () => openPassage(row.dataset.pid));
-    row.addEventListener('mouseenter', () => { highlightNode(row.dataset.pid, true); showClipTip(row); });
-    row.addEventListener('mouseleave', () => { highlightNode(row.dataset.pid, false); hideClipTip(); });
-  });
+  renderTimelineList();
   updateIntervalPanel();
 }
 
@@ -649,12 +710,35 @@ function unlockSelectedGroup() {
 
 /* ============ 线索板 ============ */
 function boardPassages() { return filteredPassages('board').sort(dateSort); }
+function updateBoardMode() {
+  const list = boardPassages();
+  $('#board-mode').textContent = list.length ? (selectedBoard.length === 1 ? '已选 1 张卡片，请再选一张' : '选择两张卡片建立关联') : '添加 clips 后即可整理线索';
+}
+/* 选中态局部打补丁：只改受影响卡片的 class 与「前往CLIP」按钮，DOM 与 renderBoard 全量重建的产物完全一致 */
+function patchBoardSelection(changedIds) {
+  updateBoardMode();
+  changedIds.forEach(pid => {
+    const node = $(`#board-nodes .board-card[data-id="${CSS.escape(pid)}"]`);
+    const p = clip(pid);
+    if (!node || !p) return;
+    const selected = selectedBoard.includes(pid);
+    node.classList.toggle('selected', selected);
+    const existing = node.querySelector('.board-card-foot');
+    if (selected && !existing) {
+      const foot = document.createElement('div');
+      foot.className = 'board-card-foot';
+      foot.innerHTML = `<button type="button" class="text-button" data-board-goto="${esc(p.id)}">前往CLIP →</button>`;
+      foot.querySelector('button').addEventListener('click', e => { e.stopPropagation(); gotoLibrary('passages', p.id); });
+      node.appendChild(foot);
+    } else if (!selected && existing) existing.remove();
+  });
+}
 function renderBoard() {
   const canvas = $('#board-canvas'), root = $('#board-nodes'), svg = $('#connections');
   const list = boardPassages();
   root.innerHTML = ''; svg.innerHTML = '';
   $('#board-empty').classList.toggle('hidden', list.length > 0);
-  $('#board-mode').textContent = list.length ? (selectedBoard.length === 1 ? '已选 1 张卡片，请再选一张' : '选择两张卡片建立关联') : '添加 clips 后即可整理线索';
+  updateBoardMode();
   if (!list.length) { applyBoardZoom(780, 560); return; }
   const W = Math.max(canvas.clientWidth, 780), H = Math.max(canvas.clientHeight, 560);
   const cols = Math.max(2, Math.ceil(Math.sqrt(list.length * W / H)));
@@ -669,7 +753,11 @@ function renderBoard() {
     node.className = 'board-card' + (selectedBoard.includes(p.id) ? ' selected' : '');
     node.dataset.id = p.id;
     node.style.left = pos.x + 'px'; node.style.top = pos.y + 'px';
-    node.innerHTML = `<div class="card-meta"><span>${esc(p.date || '时间待补')}</span><span>${esc(p.timeline || '未分类')}</span></div><h3>${esc(p.title)}</h3><p>${esc(p.body || '记录还没有正文…')}</p><div class="card-tags">${charsFor(p).map(c => `<span class="tag ${kindClass(c.role)}">${esc(c.name)}</span>`).join('')}${cluesFor(p).slice(0, 2).map(c => `<span class="tag clue"># ${esc(c.name)}</span>`).join('')}</div>`;
+    node.innerHTML = `<div class="card-meta"><span>${esc(p.date || '时间待补')}</span><span>${esc(p.timeline || '未分类')}</span></div><h3>${esc(p.title)}</h3><p>${esc(p.body || '记录还没有正文…')}</p><div class="card-tags">${charsFor(p).map(c => `<span class="tag ${kindClass(c.role)}">${esc(c.name)}</span>`).join('')}${cluesFor(p).slice(0, 2).map(c => `<span class="tag clue"># ${esc(c.name)}</span>`).join('')}</div>${selectedBoard.includes(p.id) ? `<div class="board-card-foot"><button type="button" class="text-button" data-board-goto="${esc(p.id)}">前往CLIP →</button></div>` : ''}`;
+    node.querySelector('[data-board-goto]')?.addEventListener('click', e => {
+      e.stopPropagation();
+      gotoLibrary('passages', p.id);
+    });
     if (boardZoom <= BD_DOT) {
       node.classList.add('as-dot');
       node.style.background = storyColor(p.storyId);
@@ -699,7 +787,7 @@ function applyBoardZoom(w, h) {
 }
 function attachBoardCardHandlers(node, p) {
   node.addEventListener('pointerdown', e => {
-    if (e.button !== 0) return;   // 访客也可拖拽卡片（不落盘，刷新即还原）
+    if (e.button !== 0 || e.target.closest('button')) return;   // 访客也可拖拽卡片（不落盘，刷新即还原）
     const start = { x: e.clientX, y: e.clientY };
     const orig = p.boardPosition || { x: parseFloat(node.style.left) || 0, y: parseFloat(node.style.top) || 0 };
     let moved = false;
@@ -713,7 +801,7 @@ function attachBoardCardHandlers(node, p) {
       if (ev.ctrlKey) { x = Math.round(x / 22) * 22; y = Math.round(y / 22) * 22; }
       node.style.left = x + 'px'; node.style.top = y + 'px';
       node.dataset.dragMoved = '1';
-      drawConnections();
+      scheduleDrawConnections();   // 拖拽中逐帧合并，避免每个 pointermove 都重绘全部连线
     };
     const onUp = () => {
       node.removeEventListener('pointermove', onMove);
@@ -731,12 +819,19 @@ function attachBoardCardHandlers(node, p) {
   });
   node.addEventListener('click', e => {
     if (node.dataset.dragMoved) { delete node.dataset.dragMoved; e.preventDefault(); e.stopImmediatePropagation(); return; }
-    if (!editUnlocked) return;   // 参观模式：点击不改关联，双击仍可读
-    if (!selectedBoard.length) { selectedBoard = [p.id]; renderBoard(); return; }
-    if (selectedBoard[0] === p.id) { selectedBoard = []; renderBoard(); return; }
+    if (!selectedBoard.length) { selectedBoard = [p.id]; patchBoardSelection([p.id]); return; }
+    if (selectedBoard[0] === p.id) { selectedBoard = []; patchBoardSelection([p.id]); return; }
+    if (!editUnlocked) { const prev = selectedBoard[0]; selectedBoard = [p.id]; patchBoardSelection([prev, p.id]); return; }   // 访客：只换选中，不建关联
     toggleBoardLink(selectedBoard[0], p.id);
   });
   node.addEventListener('dblclick', () => openPassage(p.id));
+}
+/* 拖拽中逐帧合并连线重绘：一帧内多次触发只画一次 */
+let drawConnectionsScheduled = false;
+function scheduleDrawConnections() {
+  if (drawConnectionsScheduled) return;
+  drawConnectionsScheduled = true;
+  requestAnimationFrame(() => { drawConnectionsScheduled = false; drawConnections(); });
 }
 function drawConnections() {
   const svg = $('#connections'), root = $('#board-nodes');
@@ -769,16 +864,65 @@ function drawConnections() {
 
 /* ============ 故事与 clips 库 ============ */
 function rowHTML(p) {
-  return `<article class="passage-row" data-pid="${esc(p.id)}"><span class="row-date">${esc(p.date || '时间待补')}</span><span class="row-main"><b>${esc(p.title || '未命名 clip')}</b><small>${esc(p.timeline || '未设时间线')} · ${charsFor(p).map(c => esc(c.name)).join('、') || '尚无角色'}</small></span><span class="row-story">${esc(story(p.storyId)?.title || '未归档')}</span>${p.section === 'outline' ? '<span class="tag">大纲</span>' : '<span class="tag god">正文</span>'}</article>`;
+  return `<article class="passage-row" data-pid="${esc(p.id)}"><span class="row-date">${esc(p.date || '时间待补')}</span><span class="row-main"><b>${esc(p.title || '未命名 clip')}</b><small>${esc(p.timeline || '未设时间线')} · ${charsFor(p).map(c => esc(c.name)).join('、') || '尚无角色'}</small></span>${p.section === 'outline' ? '<span class="tag">大纲</span>' : '<span class="tag god">正文</span>'}<div class="row-full">${p.html ? sanitizeClipHtml(p.html) : writerBodyMarkup(p.body || '')}<div class="row-full-foot"><button type="button" class="text-button" data-tl-goto>跳转到对应故事 →</button></div></div></article>`;
+}
+/* --- 时间线 CLIPS 索引：悬浮只高亮节点，点击就地展开全文；选中节点时最新选择排最上 --- */
+function renderTimelineList() {
+  const all = filteredPassages();
+  const placed = all.filter(p => Number.isFinite(p.position)).sort((a, b) => a.position - b.position);
+  let indexRows = selectedTimeNodes.length ? placed.filter(p => selectedTimeNodes.includes(p.id)) : placed.slice(0, 10);
+  if (selectedTimeNodes.length && tlIndexSort === 'select') {
+    indexRows = [...indexRows].sort((a, b) => selectedTimeNodes.indexOf(b.id) - selectedTimeNodes.indexOf(a.id));   // 最新选择在最上
+  }
+  const sortBtn = $('#tl-index-sort');
+  if (sortBtn) {
+    sortBtn.classList.toggle('hidden', selectedTimeNodes.length < 2);
+    sortBtn.textContent = tlIndexSort === 'select' ? '按时间排序' : '按选择排序';
+  }
+  const root = $('#timeline-list');
+  root.innerHTML = indexRows.map(rowHTML).join('');
+  $$('.passage-row', root).forEach(row => {
+    const pid = row.dataset.pid, key = 'tl:' + pid;
+    row.classList.toggle('expanded', expandedCards.has(key));
+    row.addEventListener('mouseenter', () => highlightNode(pid, true));
+    row.addEventListener('mouseleave', () => highlightNode(pid, false));
+    row.addEventListener('click', e => {
+      if (e.target.closest('button')) return;
+      if (expandedCards.has(key)) return;   // 已展开：点击不收起，用悬浮收起键
+      expandedCards.add(key);
+      renderTimelineList(); updateCollapseUI();
+    });
+    row.querySelector('[data-tl-goto]').addEventListener('click', e => {
+      e.stopPropagation();
+      const p = clip(pid);
+      if (p?.storyId) gotoLibrary('stories', p.storyId);
+      else notify('这个 clip 尚未归入任何故事');
+    });
+  });
 }
 function renderLibrary() {
   const root = $('#library-content'), query = $('#library-search').value.trim().toLowerCase();
   if (libraryTab === 'stories') {
-    const rows = db.stories.filter(s => !query || s.title.toLowerCase().includes(query));
-    root.innerHTML = rows.length ? rows.map(s =>
-      `<article class="story-card" data-story-open="${esc(s.id)}"><h3>${esc(s.title)}</h3><p>${esc(s.description || '点击在码字页打开')}</p><div class="story-count"><b>${db.passages.filter(p => p.storyId === s.id).length}</b>clips</div></article>`
-    ).join('') : emptyHTML('还没有故事', '先新建一篇故事，再把多个 clips 收进来。', '▤');
-    $$('[data-story-open]', root).forEach(el => el.onclick = () => openStoryInWriter(el.dataset.storyOpen));
+    const rows = db.stories.filter(s => !query || [s.title, s.description].join(' ').toLowerCase().includes(query));
+    root.innerHTML = rows.length ? rows.map(s => {
+      const clips = storyClips(s.id);
+      const src = [(s.description || ''), ...clips.map(c => c.body || '')].join(' ').replace(/\s+/g, ' ').trim();
+      const preview = src.slice(0, 160);
+      const open = expandedCards.has('ls:' + s.id);
+      const full = clips.length ? clips.map((c, i) =>
+        `<div class="story-clip-block"><b>${String(i + 1).padStart(2, '0')} · ${esc(c.title || '未命名 clip')}</b><div class="story-clip-body">${c.html ? sanitizeClipHtml(c.html) : writerBodyMarkup(c.body || '')}</div></div>`
+      ).join('') : '<div class="story-clip-block">这个故事还没有 clips。</div>';
+      return `<article class="story-card ${open ? 'expanded' : ''}" data-story-open="${esc(s.id)}"><h3>${esc(s.title)}</h3><p>${esc(preview || '点击展开阅读')}${src.length > 160 ? '…' : ''}</p><div class="story-count"><b>${clips.length}</b>clips</div><div class="story-full">${full}</div></article>`;
+    }).join('') : emptyHTML('还没有故事', '先新建一篇故事，再把多个 clips 收进来。', '▤');
+    $$('[data-story-open]', root).forEach(el => {
+      const sid = el.dataset.storyOpen, key = 'ls:' + sid;
+      el.addEventListener('click', e => {
+        if (e.target.closest('button')) return;
+        if (expandedCards.has(key)) return;   // 已展开：用悬浮收起键
+        expandedCards.add(key);
+        renderLibrary(); updateCollapseUI();
+      });
+    });
     return;
   }
   const rows = db.passages.filter(p => {
@@ -786,11 +930,15 @@ function renderLibrary() {
     return !query || text.includes(query);
   }).sort(dateSort);
   root.innerHTML = rows.length ? rows.map(p =>
-    `<article class="library-card" data-edit="${esc(p.id)}"><div class="library-card-head"><div><h3>${esc(p.title)}</h3><div class="story-name">${esc(story(p.storyId)?.title || '未归档')}</div></div><div class="date-chip">${esc(p.date || '时间待补')}</div></div>${p.body ? `<p class="excerpt">${esc(p.body.slice(0, 240))}${p.body.length > 240 ? '…' : ''}</p>` : ''}<div class="library-full">${p.html ? sanitizeClipHtml(p.html) : writerBodyMarkup(p.body || '')}</div><div class="library-meta"><span class="tag">${esc(p.timeline || '未设时间线')}</span>${p.section === 'outline' ? '<span class="tag god">大纲</span>' : ''}${charsFor(p).map(c => `<span class="tag ${kindClass(c.role)}">${esc(c.name)} · ${kindLabel(c.role)}</span>`).join('')}${cluesFor(p).map(c => `<span class="tag clue"># ${esc(c.name)}</span>`).join('')}</div></article>`
+    `<article class="library-card ${expandedCards.has('lc:' + p.id) ? 'expanded' : ''}" data-edit="${esc(p.id)}"><div class="library-card-head"><div><h3>${esc(p.title)}</h3><div class="story-name">${esc(story(p.storyId)?.title || '未归档')}</div></div><div class="date-chip">${esc(p.date || '时间待补')}</div></div>${p.body ? `<p class="excerpt">${esc(p.body.slice(0, 240))}${p.body.length > 240 ? '…' : ''}</p>` : ''}<div class="library-full">${p.html ? sanitizeClipHtml(p.html) : writerBodyMarkup(p.body || '')}</div><div class="library-meta"><span class="tag">${esc(p.timeline || '未设时间线')}</span>${p.section === 'outline' ? '<span class="tag god">大纲</span>' : ''}${charsFor(p).map(c => `<span class="tag ${kindClass(c.role)}">${esc(c.name)} · ${kindLabel(c.role)}</span>`).join('')}${cluesFor(p).map(c => `<span class="tag clue"># ${esc(c.name)}</span>`).join('')}</div></article>`
   ).join('') : emptyHTML('没有找到 clips', '试试调整关键词，或新建一个 clips。', '⌕');
-  $$('[data-edit]', root).forEach(el => el.onclick = () => {
-    if (!editUnlocked) { el.classList.toggle('expanded'); return; }   // 访客：就地展开全文
-    openPassage(el.dataset.edit);
+  $$('[data-edit]', root).forEach(el => {
+    const key = 'lc:' + el.dataset.edit;
+    el.onclick = () => {   // 单击：就地展开/收起全文（两种模式一致）
+      expandedCards.has(key) ? expandedCards.delete(key) : expandedCards.add(key);
+      renderLibrary(); updateCollapseUI();
+    };
+    el.ondblclick = () => { if (editUnlocked) openPassage(el.dataset.edit); };   // 双击：去码字页编辑
   });
 }
 
@@ -857,7 +1005,7 @@ function normalizeClipNames(sid) {
   let changed = false;
   clips.forEach((p, i) => {
     p.order = i;
-    const next = `${name}（${i + 1}/${clips.length}）`;
+    const next = `${name}（${fwNum(i + 1)}/${fwNum(clips.length)}）`;
     if (p.title !== next) { p.title = next; changed = true; }
   });
   return changed;
@@ -1245,6 +1393,7 @@ function switchView(name) {
   $('#crumb-current').textContent = CRUMBS[name] || name;
   if (name === 'timeline') renderTimeline();   // 回到时间线时重算几何（隐藏时渲染会拿到 0 高，导致节点挤作一团）
   if (name === 'board') requestAnimationFrame(drawConnections);
+  updateCollapseUI();
   if (name === 'writer') renderWriter();
   if (name === 'characters') renderCharacterDB();
   if (name === 'clues') renderClueDB();
@@ -1317,6 +1466,22 @@ async function cloudSave() {
   }
 }
 
+/* 云端设置：随时修改仓库名与令牌 */
+function cloudSettings() {
+  if (!editUnlocked) return;
+  const curRepo = localStorage.getItem('tpl_gh_repo') || guessRepo() || '未设置';
+  const hasToken = !!localStorage.getItem('tpl_gh_token');
+  const r = prompt(`云端仓库（当前：${curRepo}）\n修改后点确定；清空则恢复为按网址自动推断：`, localStorage.getItem('tpl_gh_repo') || '');
+  if (r === null) return;
+  if (r.trim()) localStorage.setItem('tpl_gh_repo', r.trim());
+  else localStorage.removeItem('tpl_gh_repo');
+  const t = prompt(`访问令牌（当前：${hasToken ? '已保存' : '未设置'}）\n输入新令牌则替换；留空保持不变；输入一个空格则清除：`);
+  if (t === null) return;
+  if (t === ' ') localStorage.removeItem('tpl_gh_token');
+  else if (t.trim()) localStorage.setItem('tpl_gh_token', t.trim());
+  notify('云端设置已更新');
+}
+
 /* --- 本地备份：导出 / 导入 JSON --- */
 function exportData() {
   if (!editUnlocked) return;
@@ -1375,9 +1540,20 @@ function bindEvents() {
     save();
   };
   $('#cloud-save').onclick = cloudSave;
+  $('#cloud-settings').onclick = cloudSettings;
   $('#export-data').onclick = exportData;
   $('#import-data').onclick = () => $('#import-file').click();
   $('#import-file').onchange = e => { importData(e.target.files[0]); e.target.value = ''; };
+  $('#collapse-all-float').onclick = () => {
+    viewExpandKeys().forEach(k => expandedCards.delete(k));   // 只收起当前页面的展开
+    updateCollapseUI();
+    renderLibrary(); renderTimelineList();
+    notify('已全部收起');
+  };
+  $('#tl-index-sort')?.addEventListener('click', () => {
+    tlIndexSort = tlIndexSort === 'select' ? 'time' : 'select';
+    renderTimelineList();
+  });
   $$('[data-switch="library"]').forEach(b => b.onclick = () => switchView('library'));
   $('#add-passage-top').onclick = () => openPassage();
   $('#add-story').onclick = createStoryInWriter;
@@ -1457,7 +1633,7 @@ function bindEvents() {
 
   // 线索板
   $('#board-filter-toggle').onclick = () => $('#board-filter').classList.toggle('hidden');
-  $('#clear-selection').onclick = () => { selectedBoard = []; renderBoard(); };
+  $('#clear-selection').onclick = () => { const prev = [...selectedBoard]; selectedBoard = []; patchBoardSelection(prev); };
   ['board-story-filter', 'board-character-filter', 'board-timeline-filter'].forEach(x => $('#' + x).onchange = renderBoard);
   $('#board-canvas').addEventListener('wheel', e => {
     if (!e.ctrlKey) return;
@@ -1484,8 +1660,12 @@ function bindEvents() {
     bcanvas.addEventListener('pointercancel', up);
   });
 
-  // 库
-  $('#library-search').oninput = renderLibrary;
+  // 库（搜索输入防抖 150ms：快速连续敲键只渲染最后一次）
+  let librarySearchTimer = null;
+  $('#library-search').oninput = () => {
+    clearTimeout(librarySearchTimer);
+    librarySearchTimer = setTimeout(renderLibrary, 150);
+  };
   $$('.library-tab').forEach(b => b.onclick = () => {
     libraryTab = b.dataset.tab;
     $$('.library-tab').forEach(x => x.classList.toggle('active', x === b));
@@ -1498,7 +1678,7 @@ function bindEvents() {
     const s = story(activeStoryId); if (!s) return;
     s.title = e.target.value;
     normalizeClipNames(activeStoryId);
-    $$('.writer-clip-name').forEach((el, i) => el.textContent = `${s.title || '未命名故事'}（${i + 1}/${storyClips(activeStoryId).length}）`);
+    $$('.writer-clip-name').forEach((el, i) => el.textContent = `${s.title || '未命名故事'}（${fwNum(i + 1)}/${fwNum(storyClips(activeStoryId).length)}）`);
     markWriterDirty();
   };
   $('#writer-story-title').onblur = () => {

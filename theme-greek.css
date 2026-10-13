@@ -146,6 +146,8 @@ body.greek input,body.greek select,body.greek textarea{
   background:#0f1c40;border-color:#31498a;color:var(--ivory);
 }
 body.greek input:focus,body.greek textarea:focus,body.greek select:focus{border-color:var(--gold)}
+/* 码字页故事标题是无边框大标题排版，去掉输入框底色，直接融进丝绸绿背景 */
+body.greek .writer-story-row input{background:transparent;border-color:transparent}
 body.greek input::placeholder,body.greek textarea::placeholder{color:#66739c}
 body.greek .search-box{color:#a89a70}
 body.greek .search-box input{color:var(--ivory)}
@@ -209,10 +211,17 @@ body.greek .tag.animal{background:#4d5a2a;color:#e8ecd0;border-color:#8a9460}
 body.greek .tag.other{background:#4a3a5e;color:#e0d4f0;border-color:#7a6390}
 body.greek .tag.clue{background:#5c0e12;color:#f0b9a8;border-color:#a83226}
 
-/* ============ 网页背景：低透明度希腊回纹替换圆点 ============ */
+/* ============ 网页背景：墨绿丝绸（去回字纹）——超大缓柔光 + 绸面微光粒 + 极细单向经纱，固定于视口 ============ */
 body.greek{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M4 24V4h20v9H11v7h9v-3h-4' fill='none' stroke='%23c9a227' stroke-opacity='0.08' stroke-width='1.4'/%3E%3C/svg%3E"),linear-gradient(160deg,#0b1330 0%,#101c42 50%,#0a1026 100%);
-  background-size:28px 28px,100% 100%;
+  background-image:
+    linear-gradient(118deg,transparent 22%,#9fc9a80a 38%,#b7dcc014 50%,#9fc9a80a 62%,transparent 78%),
+    linear-gradient(118deg,transparent 52%,#00000017 66%,#0000001f 74%,transparent 88%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(90deg,#e6f0e804 0 1px,transparent 1px 2px),
+    repeating-linear-gradient(90deg,#00000006 0 1px,transparent 1px 7px),
+    linear-gradient(160deg,#0a1a11 0%,#10271a 50%,#07120c 100%);
+  background-size:100% 100%,100% 100%,140px 140px,auto,auto,100% 100%;
+  background-attachment:fixed;
 }
 
 /* ============ 顶栏红色拉满 ============ */
@@ -264,3 +273,100 @@ body.greek .pool-drop-preview{background:#1b3161;border-color:var(--gold);box-sh
 body.greek .pool-drop-preview b{color:var(--gold-hi);text-shadow:0 1px 1px #00000066}
 body.greek .pool-drop-preview small{color:#8ea3d8}
 body.greek .pool-drop-marker{background:repeating-linear-gradient(180deg,var(--gold-hi) 0 4px,transparent 4px 8px)}
+
+/* 侧栏右缘：忒洛波利斯主题 · 鎏金双线 + 书脊浮起 */
+body.greek .sidebar{border-right:1px solid var(--gold-hi);box-shadow:8px 0 22px #00000080}
+body.greek .sidebar::after{background:var(--gold-deep);opacity:.95;box-shadow:0 0 5px #c9a22766}
+
+/* 就地展开全文：忒洛波利斯主题 */
+body.greek .row-full,body.greek .story-clip-body{color:var(--gold-hi);text-shadow:0 1px 1px #00000066}
+body.greek .row-full,body.greek .story-card .story-full{border-top-color:#31498a}
+body.greek .story-clip-block>b{color:var(--gold-hi)}
+body.greek .row-collapse{background:#1b3161;border-color:var(--gold-deep);color:var(--gold-hi)}
+body.greek #collapse-all-float{background:#1b3161;border-color:var(--gold);color:var(--gold-hi);box-shadow:0 10px 26px #00000066}
+
+/* 线索板背景：忒洛波利斯主题 · 墨蓝织金菱纹 */
+body.greek .board-canvas{background-color:#0d1734;background-image:repeating-linear-gradient(45deg,#c9a22717 0 1px,transparent 1px 26px),repeating-linear-gradient(-45deg,#c9a22717 0 1px,transparent 1px 26px),radial-gradient(#c9a22726 1px,transparent 1.7px);background-size:auto,auto,52px 52px;border-color:#31498a}
+body.greek .float-collapse{background:#1b3161;border-color:var(--gold-deep);color:var(--gold-hi)}
+body.greek .board-card-foot{border-top-color:#31498a}
+
+/* 青金石卡面：纯色石面 + 砂砾噪点 + 黄铁矿金斑；卡片按序号分浓度（文字层不动，可读性不变） */
+body.greek .passage-row,body.greek .library-card,body.greek .story-card,body.greek .character-card,
+body.greek .node-card,body.greek .board-card,body.greek .clip-tip{
+  background-color:#16305f;
+  background-image:
+    radial-gradient(1.9px 1.9px at 24px 32px,#fff3c4e6 0%,#efd98a73 45%,transparent 65%),
+    radial-gradient(3.1px 3.1px at 132px 96px,#efd98a99 0%,#c9a22759 50%,transparent 68%),
+    radial-gradient(2.2px 2.2px at 84px 168px,#fff3c4cc 0%,#e6c45559 50%,transparent 66%),
+    radial-gradient(1.5px 1.5px at 196px 52px,#e6c455a6 0%,transparent 62%),
+    radial-gradient(3.5px 3px at 58px 118px,#efd98a73 0%,#c9a22745 55%,transparent 70%),
+    radial-gradient(1.8px 1.8px at 168px 190px,#fff3c4b3 0%,#efd98a4d 50%,transparent 65%),
+    radial-gradient(1.2px 1.2px at 104px 60px,#e6c4558c 0%,transparent 60%),
+    radial-gradient(2.4px 2.4px at 224px 148px,#efd98a80 0%,#c9a22740 52%,transparent 68%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0.45'/%3E%3CfeFuncG type='linear' slope='0.45'/%3E%3CfeFuncB type='linear' slope='0.55'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.18'/%3E%3C/svg%3E");
+  background-size:240px 240px,300px 300px,320px 320px,260px 260px,340px 340px,280px 280px,220px 220px,360px 360px,180px 180px;
+  box-shadow:0 14px 34px #00000059,inset 0 0 0 1px #09153080,inset 0 -10px 22px #00000045;
+}
+
+/* 线索板星点：忒洛波利斯主题 · 鎏金星光随机散布 */
+body.greek .board-canvas{
+  background-image:
+    radial-gradient(1.8px 1.8px at 30px 42px,#fff3c4d9 0%,#efd98a55 45%,transparent 70%),
+    radial-gradient(1.1px 1.1px at 96px 138px,#efd98a99 0%,transparent 65%),
+    radial-gradient(2.6px 2.6px at 158px 64px,#fff3c4e6 0%,#c9a22766 45%,transparent 72%),
+    radial-gradient(1.3px 1.3px at 214px 156px,#efd98a80 0%,transparent 65%),
+    radial-gradient(2px 2px at 64px 208px,#fff3c4b3 0%,#efd98a44 45%,transparent 70%),
+    radial-gradient(1px 1px at 188px 232px,#efd98a73 0%,transparent 65%),
+    repeating-linear-gradient(45deg,#c9a22717 0 1px,transparent 1px 26px),
+    repeating-linear-gradient(-45deg,#c9a22717 0 1px,transparent 1px 26px);
+  background-size:260px 260px,310px 310px,350px 350px,290px 290px,330px 330px,250px 250px,auto,auto;
+}
+
+/* 时间轴背景：忒洛波利斯主题 · 与线索板一致的鎏金星点 + 菱格 */
+body.greek .timeline-scroll{
+  background-image:
+    radial-gradient(1.8px 1.8px at 30px 42px,#fff3c4d9 0%,#efd98a55 45%,transparent 70%),
+    radial-gradient(1.1px 1.1px at 96px 138px,#efd98a99 0%,transparent 65%),
+    radial-gradient(2.6px 2.6px at 158px 64px,#fff3c4e6 0%,#c9a22766 45%,transparent 72%),
+    radial-gradient(1.3px 1.3px at 214px 156px,#efd98a80 0%,transparent 65%),
+    radial-gradient(2px 2px at 64px 208px,#fff3c4b3 0%,#efd98a44 45%,transparent 70%),
+    radial-gradient(1px 1px at 188px 232px,#efd98a73 0%,transparent 65%),
+    repeating-linear-gradient(45deg,#c9a22717 0 1px,transparent 1px 26px),
+    repeating-linear-gradient(-45deg,#c9a22717 0 1px,transparent 1px 26px);
+  background-size:260px 260px,310px 310px,350px 350px,290px 290px,330px 330px,250px 250px,auto,auto;
+}
+/* 青金石卡面：按卡片序号分配不同浓度的青金石蓝 + 金斑随机偏移 */
+body.greek :is(.library-card,.story-card,.character-card,.passage-row,.node-card,.board-card):nth-child(2n){
+  background-color:#2456ad;
+  background-position:53px 17px,101px 139px,23px 88px,167px 71px,89px 199px,41px 97px,137px 29px,73px 161px,0 0;
+}
+body.greek :is(.library-card,.story-card,.character-card,.passage-row,.node-card,.board-card):nth-child(3n){
+  background-color:#0a1a38;
+  background-position:121px 77px,9px 51px,143px 111px,61px 23px,177px 143px,97px 11px,29px 131px,151px 67px,0 0;
+}
+body.greek :is(.library-card,.story-card,.character-card,.passage-row,.node-card,.board-card):nth-child(5n){
+  background-color:#23307a;
+  background-position:77px 153px,59px 19px,187px 37px,113px 121px,31px 67px,151px 83px,83px 157px,19px 43px,0 0;
+}
+body.greek :is(.library-card,.story-card,.character-card,.passage-row,.node-card,.board-card):nth-child(7n){
+  background-color:#2860c2;
+  background-position:33px 191px,171px 61px,99px 27px,207px 151px,15px 109px,131px 173px,67px 83px,191px 19px,0 0;
+}
+
+/* 时间节点卡：同样按 .time-node 序号分浓度 + 金斑偏移 */
+body.greek .time-node:nth-child(2n) .node-card{
+  background-color:#2456ad;
+  background-position:53px 17px,101px 139px,23px 88px,167px 71px,89px 199px,41px 97px,137px 29px,73px 161px,0 0;
+}
+body.greek .time-node:nth-child(3n) .node-card{
+  background-color:#0a1a38;
+  background-position:121px 77px,9px 51px,143px 111px,61px 23px,177px 143px,97px 11px,29px 131px,151px 67px,0 0;
+}
+body.greek .time-node:nth-child(5n) .node-card{
+  background-color:#23307a;
+  background-position:77px 153px,59px 19px,187px 37px,113px 121px,31px 67px,151px 83px,83px 157px,19px 43px,0 0;
+}
+body.greek .time-node:nth-child(7n) .node-card{
+  background-color:#2860c2;
+  background-position:33px 191px,171px 61px,99px 27px,207px 151px,15px 109px,131px 173px,67px 83px,191px 19px,0 0;
+}

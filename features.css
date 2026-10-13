@@ -1,0 +1,129 @@
+/* ===== features.css · 新功能样式 ===== */
+
+/* --- 时间线：工具（展开按钮 / 缩放指示） --- */
+.timeline-tools{display:inline-flex;align-items:center;gap:10px}
+.timeline-tools .text-button{font-size:9px;color:#8a7a52;padding:3px 8px;border:1px solid #ddd8c6;border-radius:3px;background:#fffefa}
+.timeline-tools .text-button:hover{background:#f1eee2}
+#tl-zoom,#board-zoom{font:9px var(--mono);color:#8d8a7c}
+
+/* --- 时间线：未入线 pool --- */
+.timeline-pool{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 14px;margin-bottom:12px;border:1px dashed #d9d5c6;border-radius:5px;background:#f6f4ec}
+.pool-label{font:9px var(--mono);letter-spacing:.12em;color:#99927c}
+.pool-chips{display:inline-flex;gap:6px;flex-wrap:wrap}
+.pool-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#fffefa;border:1px solid #e0dccc;border-radius:20px;font:10px var(--serif);color:#5b5b50;cursor:grab;user-select:none}
+.pool-chip:hover{border-color:#c2b68f}
+.pool-chip i{width:7px;height:7px;border-radius:50%;flex:none}
+.pool-hint{font-size:9px;color:#a9a595}
+
+/* --- 时间线：默认高度加大 --- */
+.timeline-scroll{height:380px}
+.timeline-scroll .time-axis{top:50%}
+.timeline-scroll .time-tick{top:calc(50% - 7px)}
+
+/* --- 时间线：节点（动画 / 纵向文本 / 纯圆点模式） --- */
+.time-node{transition:transform .2s}
+.timeline-track.expanded .time-node{transition:left .45s ease,top .45s ease}
+.time-node.dragging,.timeline-track.tl-dragging .time-node{transition:none!important}
+.time-rowline{position:absolute;height:1px;background:#d9d6c9;left:40px;right:40px}
+.ghost-rowline{position:absolute;height:2px;left:40px;right:40px;background:#b99b5a;box-shadow:0 0 8px #b99b5a66;border-radius:1px;display:none;pointer-events:none;z-index:0}
+.ghost-rowline.on{display:block}
+.ghost-rowline.new-row{background:repeating-linear-gradient(90deg,#b26d50 0 8px,transparent 8px 15px);box-shadow:none}
+.ghost-slot{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #b99b5a;background:#fffefa;transform:translate(-50%,-50%);display:none;pointer-events:none;z-index:2;box-shadow:0 0 8px #b99b5a55}
+.ghost-slot.on{display:block}
+.timeline-track:not(.expanded) .node-card{writing-mode:vertical-rl;width:40px;height:96px;padding:8px 6px;display:flex;gap:8px;align-items:flex-start;justify-content:flex-start;text-align:start}
+.timeline-track:not(.expanded) .node-card b{font-size:10px;font-weight:500}
+.timeline-track:not(.expanded) .node-card small{display:none}
+.timeline-track:not(.expanded) .node-card{overflow:hidden}
+.time-node.dot-only .node-card{display:none}
+.time-node.dot-only .node-dot{transform:scale(1.7)}
+.timeline-track.expanded{min-height:100%}
+.timeline-track.expanded .time-node{cursor:pointer}
+
+/* --- 时间线：列表高亮 --- */
+.passage-row.hl{border-color:#b99b5a;box-shadow:0 0 0 2px #b99b5a33;background:#fffdf4}
+.time-node.hl .node-dot{transform:scale(1.7);background:#a98d58;box-shadow:0 0 0 3px #b99b5a33}
+.time-node.hl .node-card{border-color:#b99b5a;box-shadow:0 0 0 2px #b99b5a22}
+
+/* --- 索引行悬浮：正文预览气泡 --- */
+.clip-tip{position:fixed;z-index:20;width:280px;max-width:calc(100vw - 40px);padding:10px 12px;border:1px solid #ddd8c6;border-radius:6px;background:#fffefa;box-shadow:0 10px 26px #2e2f2730;transform:translateY(calc(-100% - 8px));pointer-events:none;display:none}
+.clip-tip.on{display:block}
+.clip-tip.below{transform:translateY(8px)}
+.clip-tip b{display:block;font:500 11px var(--serif);color:#4e4e42;margin-bottom:4px}
+.clip-tip p{margin:0;font:10px/1.7 var(--serif);color:#747365;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* --- 线索板：缩放容器 --- */
+#board-spacer{position:relative;pointer-events:none;visibility:hidden}
+#board-inner{position:absolute;left:0;top:0;transform-origin:0 0}
+.board-toolbar-right{display:flex;align-items:center;gap:12px}
+.board-card.as-dot{width:20px!important;height:20px!important;min-height:20px;padding:0;border-radius:50%;overflow:hidden;border-width:2px;box-shadow:0 3px 8px #37372e22}
+.board-card.as-dot>*{display:none!important}
+.board-card.as-dot:hover{transform:scale(1.25)}
+.connections line.auto{stroke:#6b8290;stroke-dasharray:2 5}
+.lg{display:inline-block;width:14px;height:0;border-top:2px solid #8f7954;vertical-align:middle;margin:0 2px}
+.lg-auto{border-color:#6b8290;border-top-style:dotted}
+
+/* --- 角色类别：神 / 人类 / 动物 / 其他 --- */
+.tag.god,.character-kind.god{color:#8a6d1d;background:#f4ead0}
+.tag.human,.character-kind.human{color:#756440;background:#eee9da}
+.tag.animal,.character-kind.animal{color:#4f7268;background:#e6ede7}
+.tag.other,.character-kind.other{color:#617786;background:#e9edef}
+.character-pick em.god{color:#8a6d1d}
+.character-pick em.human{color:#756440}
+.character-pick em.animal{color:#4f7268}
+.character-pick em.other{color:#617786}
+.clue-picks .character-pick em{color:#8a7a52}
+
+/* --- 码字页：大纲 clip / 悬浮断开按钮 --- */
+.writer-section.is-outline{border-left:3px solid #b99b5a;background:#fffdf6}
+.writer-float-split{position:fixed;right:30px;bottom:30px;z-index:8;padding:11px 17px;border-radius:24px;border:1px solid #4a4b3e;background:#34352d;color:#f2ecd9;font:11px var(--sans);cursor:pointer;box-shadow:0 10px 24px #2e2f2733;transition:.15s}
+.writer-float-split:hover:not(:disabled){background:#4c4d40;transform:translateY(-2px)}
+.writer-float-split:disabled{opacity:.45;cursor:default}
+#writer-save{padding:6px 12px}
+
+/* --- 角色库工具栏 --- */
+.character-toolbar-actions{display:flex;align-items:center;gap:12px}
+.character-toolbar-actions .text-button{font-size:9px;color:#8a7a52;padding:4px 9px;border:1px solid #ddd8c6;border-radius:3px;background:#fffefa;white-space:nowrap}
+.character-toolbar-actions .text-button:hover{background:#f1eee2}
+
+/* --- 移动端微调 --- */
+@media(max-width:650px){.timeline-tools .text-button{font-size:8px}.writer-float-split{right:16px;bottom:16px}.timeline-scroll{height:260px}}
+
+/* --- 时间线：悬浮置顶 + 点击放大预览 + 点态悬浮卡片 --- */
+.time-node:hover{z-index:9}
+.node-excerpt{display:none;font-style:normal;font:10px/1.6 var(--serif);color:#747365;margin-top:5px}
+.node-card b span{display:block}
+/* 标题显隐：默认小卡只显示缩略版；展开态时间线、点开放大的卡、点态悬浮卡都显示完整版 */
+.node-card b .t-full{display:none}
+.timeline-track.expanded .node-card b .t-full{display:block}
+.timeline-track.expanded .node-card b .t-short{display:none}
+.timeline-track:not(.expanded) .time-node.peek .node-card b .t-full,
+.timeline-track:not(.expanded) .time-node.dot-only:hover .node-card b .t-full{display:block}
+.timeline-track:not(.expanded) .time-node.peek .node-card b .t-short,
+.timeline-track:not(.expanded) .time-node.dot-only:hover .node-card b .t-short{display:none}
+/* 收起态：点开放大 */
+.timeline-track:not(.expanded) .time-node.peek{z-index:7}
+.timeline-track:not(.expanded) .time-node.peek .node-card{display:block;writing-mode:horizontal-tb;width:230px;height:auto;padding:10px 12px;border-color:#c7b889;box-shadow:0 12px 28px #38382c26}
+.timeline-track:not(.expanded) .time-node.peek .node-card small{display:block}
+.timeline-track:not(.expanded) .time-node.peek .node-excerpt{display:block}
+.timeline-track:not(.expanded) .time-node.dot-only:hover{z-index:8}
+.timeline-track:not(.expanded) .time-node.dot-only:hover .node-card{display:block;writing-mode:horizontal-tb;width:230px;height:auto;padding:10px 12px;border-color:#c7b889;box-shadow:0 12px 28px #38382c26}
+.timeline-track:not(.expanded) .time-node.dot-only:hover .node-card small{display:block}
+.timeline-track:not(.expanded) .time-node.dot-only:hover .node-excerpt{display:block}
+/* 展开态：点开放大（加宽 + 正文预览） */
+.timeline-track.expanded .time-node.peek{z-index:7}
+.timeline-track.expanded .time-node.peek .node-card{width:260px;border-color:#c7b889;box-shadow:0 12px 28px #38382c26}
+.timeline-track.expanded .time-node.peek .node-excerpt{display:block}
+
+/* --- 收起态竖卡：行高压到 1、卡高加大，保证"6 字 + ……"一列放完 --- */
+.timeline-track:not(.expanded) .node-card{height:104px}
+.timeline-track:not(.expanded) .node-card b{line-height:1}
+
+/* --- 展开模式：未入线池悬浮窗 --- */
+.timeline-pool.floating{position:fixed;right:22px;top:78px;z-index:9;width:288px;max-height:52vh;overflow-y:auto;margin:0;border:1px solid #e4e0d6;border-radius:8px;background:#f5f3ec;box-shadow:0 12px 32px #2e2f2738;align-items:flex-start}
+.timeline-pool.floating .pool-hint{width:100%}
+
+/* --- 侧栏：字号三档切换 --- */
+.font-size-switch{display:flex;align-items:center;gap:5px;margin:8px 9px 0;color:inherit;opacity:.85}
+.font-size-switch span{font-size:9px;margin-right:3px}
+.font-size-switch button{flex:1;border:1px solid currentColor;border-radius:3px;background:transparent;color:inherit;font-size:9px;padding:4px 2px;cursor:pointer;opacity:.65}
+.font-size-switch button.on{opacity:1;background:#ffffff1c;font-weight:600}

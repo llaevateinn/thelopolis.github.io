@@ -1,0 +1,221 @@
+/* ============================================================
+   忒洛波利斯主题（body.greek 时生效）· 全站版
+   深夜蓝金剧场：绯红边栏 × 墨蓝网页底 × 宝石蓝卡 × 鎏金字
+   ============================================================ */
+body.greek{
+  --paper:#0b1330;          /* 整个网页背景：深夜蓝黑 */
+  --surface:#15264e;        /* 一切卡面：宝石深蓝 */
+  --ink:#ece4cd;            /* 正文暖象牙 */
+  --muted:#a89a70;
+  --line:#31498a;           /* 克莱因蓝系描边 */
+  --rust:#c44b3a;
+  --rust-pale:#3a1f1c;
+  --olive:#8a6d2f;
+  --olive-dark:#6b5420;
+  --blue:#7ea0e8;
+  --shadow:0 14px 34px #00000055;
+  --crimson:#7d1418;
+  --crimson-deep:#5c0e12;
+  --gold:#c9a227;
+  --gold-hi:#efd98a;
+  --gold-deep:#a8842a;
+  --night:#14264f;
+  --night-soft:#1b3161;
+  --ikb:#2c5fd7;
+  --ikb-deep:#002fa7;
+  --ivory:#ece4cd;
+  color:var(--ivory);
+}
+/* 网页总背景：墨蓝 + 碎金 */
+body.greek{
+  background-color:var(--paper);
+  background-image:
+    radial-gradient(#c9a22722 1px,transparent 1.6px),
+    linear-gradient(160deg,#0b1330 0%,#101c42 50%,#0a1026 100%);
+  background-size:26px 26px,100% 100%;
+}
+/* 碑铭衬线标题 */
+body.greek h1,body.greek h2,body.greek h3,body.greek .brand b,body.greek .writer-clip-name{
+  font-family:'Cormorant Garamond','Noto Serif SC',serif;
+  letter-spacing:.06em;
+}
+/* 鎏金渐变标题字 */
+body.greek .page-heading h1,body.greek .node-card b,body.greek .board-card h3,
+body.greek .library-card h3,body.greek .story-card h3,body.greek .character-card h3,
+body.greek .clip-tip b,body.greek .modal-header h2,body.greek .writer-heading h1,
+body.greek .section-head h2,body.greek .character-editor h2{
+  background:linear-gradient(165deg,#f9e7a5 0%,#e3c25e 40%,#a87f1e 78%,#e9c76a 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+body.greek .eyebrow,body.greek .side-label{letter-spacing:.22em;color:var(--gold-hi);font-weight:600}
+body.greek small,body.greek .muted,body.greek .mono{color:#a89a70}
+body.greek p{color:#cfc7a8}
+/* 金回纹饰带（主要容器上沿） */
+body.greek .timeline-card,body.greek .modal,body.greek .character-editor{
+  border-top:6px solid transparent;
+  border-image:repeating-linear-gradient(90deg,var(--gold) 0 10px,var(--crimson) 10px 14px,var(--gold) 14px 18px,#0000 18px 26px) 6;
+  border-image-slice:6 0 0 0;
+  border-image-width:6px 0 0 0;
+}
+/* ============ 一切卡片与面板：宝石深蓝 ============ */
+body.greek .timeline-card,body.greek .filter-bar,body.greek .board-toolbar,body.greek .board-filter,
+body.greek .writer-toolbar,body.greek .character-directory-toolbar,body.greek .writer-empty,
+body.greek .writer-no-story,body.greek .interval-panel,body.greek .timeline-pool,
+body.greek .modal,body.greek .character-editor,body.greek .empty-state{
+  background:#14224a;
+  border-color:var(--line);
+  box-shadow:var(--shadow);
+  color:var(--ivory);
+}
+body.greek .passage-row,body.greek .library-card,body.greek .story-card,body.greek .character-card{
+  background:linear-gradient(160deg,var(--night-soft) 0%,var(--night) 60%,#0e1c3d 100%);
+  border:1px solid var(--line);
+  box-shadow:0 8px 22px #00000044,inset 0 1px 0 #4a6fd433;
+  color:var(--ivory);
+}
+body.greek .passage-row:hover,body.greek .library-card:hover,body.greek .story-card:hover{border-color:var(--gold)}
+body.greek .passage-row.hl{border-color:var(--gold);box-shadow:0 0 0 2px #c9a22733;background:#1b3161}
+body.greek .node-card,body.greek .board-card,body.greek .clip-tip{
+  background:linear-gradient(160deg,var(--night-soft) 0%,var(--night) 60%,#0e1c3d 100%);
+  border:1px solid var(--ikb);
+  box-shadow:0 8px 22px #00000066,inset 0 1px 0 #4a6fd455,inset 0 0 0 1px #002fa755;
+  color:var(--ivory);
+}
+body.greek .node-card small,body.greek .node-excerpt,body.greek .board-card p,
+body.greek .library-card .excerpt,body.greek .story-card p,body.greek .character-card p,
+body.greek .clip-tip p,body.greek .row-main small{color:#cfc7a8}
+body.greek .card-meta,body.greek .library-card .story-name,body.greek .character-card-foot,
+body.greek .row-date,body.greek .row-story{color:#8fa3d9}
+body.greek .date-chip{background:#002fa755;color:#cfd9f7;border-color:#4a6fd4}
+body.greek .board-card:hover{border-color:var(--gold)}
+body.greek .board-card.selected{border-color:var(--gold);box-shadow:0 0 0 3px #c9a22744}
+body.greek .character-avatar,body.greek .clue-avatar{background:#002fa766;color:var(--gold-hi);border:1px solid #4a6fd4}
+body.greek .story-count b{color:var(--gold-hi)}
+/* ============ 码字区 ============ */
+body.greek .writer-section{background:#14224a;border-color:var(--line);color:var(--ivory);box-shadow:var(--shadow)}
+body.greek .writer-section:not(.is-outline){border-left:3px solid var(--gold)}
+body.greek .clip-writing{color:var(--ivory);caret-color:var(--gold-hi)}
+body.greek .clip-writing:empty::before{color:#7c86a8}
+body.greek .writer-clip-name{color:var(--gold-hi);background:transparent}
+body.greek .writer-section-head{border-color:#31498a;color:#a89a70}
+body.greek .writer-section-meta{border-color:#31498a}
+body.greek .writer-clip-preview{color:#8fa3d9}
+body.greek .writer-format-button,body.greek .writer-collapse-all,body.greek .writer-collapse-button,
+body.greek .clip-drag-handle,body.greek .writer-mini-button{
+  background:#1b3161;border-color:#31498a;color:var(--gold-hi);
+}
+body.greek .writer-format-button:hover,body.greek .writer-collapse-all:hover,
+body.greek .writer-collapse-button:hover,body.greek .clip-drag-handle:hover,body.greek .writer-mini-button:hover{background:#26407c}
+body.greek .writer-format-button.active{background:var(--ikb-deep);color:#fff}
+body.greek .writer-clip-delete{color:#e88}
+body.greek .add-section-button{border-color:#31498a;color:var(--gold-hi)}
+body.greek .add-section-button:hover{border-color:var(--gold);background:#1b3161}
+body.greek .writer-float-split{background:#14224a;border-color:var(--gold);color:var(--gold-hi)}
+body.greek .writer-save-hint,.body.greek .toolbar-label{color:#a89a70}
+/* ============ 侧栏（绯红保留） ============ */
+body.greek .sidebar{background:linear-gradient(180deg,var(--crimson-deep) 0%,var(--crimson) 55%,#4a0a0e 100%);color:#f0dfb2}
+body.greek .brand-mark{border-color:var(--gold);color:var(--gold-hi);background:#f7df9e18;box-shadow:0 0 0 2px #c9a22755,inset 0 0 8px #efd98a33;text-shadow:0 1px 2px #00000088}
+body.greek .brand b{color:var(--gold-hi);text-shadow:0 1px 2px #00000099}
+body.greek .brand small{color:#d8b96a}
+body.greek .nav-item{color:#e6cf9a}
+body.greek .nav-item:hover{background:#f7df9e1a;color:#fff3d0}
+body.greek .nav-item.active{background:#efd98a26;box-shadow:inset 2px 0 var(--gold-hi);color:#ffefd0;text-shadow:0 1px 1px #00000066}
+body.greek .nav-icon{color:var(--gold-hi)}
+body.greek .side-label{color:#d8b96a}
+body.greek .stat-line{color:#e6cf9a}
+body.greek .stat-line b{color:var(--gold-hi)}
+body.greek .side-divider{background:#9c3a2e}
+body.greek .sidebar-note{border-color:#a8442f;color:#e0c493}
+body.greek .note-dot{background:var(--gold)}
+body.greek .sidebar-bottom{color:#ecd7a4}
+body.greek .avatar{background:linear-gradient(135deg,var(--gold-hi),var(--gold));color:var(--crimson-deep);font-weight:700}
+body.greek .status-dot{background:var(--gold-hi)}
+/* 顶栏 */
+body.greek .topbar{background:linear-gradient(180deg,#8d1a1e,var(--crimson));border-bottom:3px solid var(--gold)}
+body.greek .topbar .breadcrumb{color:#f0d9a0;text-shadow:0 1px 1px #00000077}
+body.greek .topbar .breadcrumb b{color:var(--gold-hi)}
+body.greek .save-state{color:#e6cf9a}
+/* ============ 控件 ============ */
+body.greek .button-dark{background:linear-gradient(180deg,#a83226,#8d1a1e);border:1px solid var(--gold);color:#ffe9b0;text-shadow:0 1px 1px #00000088;box-shadow:inset 0 1px 0 #f7df9e44}
+body.greek .button-dark:hover{background:linear-gradient(180deg,#bd3f2d,#a32126)}
+body.greek .button-outline{background:#1b3161;border-color:var(--gold-deep);color:var(--gold-hi)}
+body.greek .button-outline:hover{background:#26407c;border-color:var(--gold)}
+body.greek .text-button{color:var(--gold-hi)}
+body.greek input,body.greek select,body.greek textarea{
+  background:#0f1c40;border-color:#31498a;color:var(--ivory);
+}
+body.greek input:focus,body.greek textarea:focus,body.greek select:focus{border-color:var(--gold)}
+body.greek input::placeholder,body.greek textarea::placeholder{color:#66739c}
+body.greek .search-box{color:#a89a70}
+body.greek .search-box input{color:var(--ivory)}
+body.greek .library-tab{color:#a89a70}
+body.greek .library-tab.active{border-color:var(--gold);color:var(--gold-hi)}
+body.greek .library-tab span{color:#8fa3d9}
+/* 弹窗内标签与说明 */
+body.greek .form-field>span,body.greek .character-field legend{color:#b3a67e}
+body.greek .form-field>small,.body.greek .character-field small{color:#8fa3d9}
+body.greek .character-pick{border-color:#31498a;background:#1b3161;color:var(--ivory)}
+body.greek .modal-header{border-color:#31498a}
+body.greek .icon-button{color:#a89a70}
+body.greek .modal-actions{border-color:#31498a}
+/* ============ 时间线 ============ */
+body.greek .node-dot{background:var(--ikb);box-shadow:0 0 0 1px var(--gold)}
+body.greek .time-node.selected .node-dot{background:var(--gold);box-shadow:0 0 0 3px #c9a22744}
+body.greek .time-node.hl .node-dot{background:var(--gold)}
+body.greek .time-axis{background:#31498a}
+body.greek .time-rowline{background:#2a3f78}
+body.greek .time-tick{color:var(--gold-hi);border-color:#31498a}
+body.greek .ghost-rowline{background:var(--gold)}
+body.greek .ghost-slot{border-color:var(--gold);background:#0f1c40}
+body.greek .ghost-rowline.new-row{background:repeating-linear-gradient(90deg,var(--rust) 0 8px,transparent 8px 15px)}
+body.greek .pool-chip{background:#1b3161;border-color:#31498a;color:var(--ivory)}
+body.greek .pool-label,.pool-hint{color:#a89a70}
+body.greek .timeline-footer,.body.greek .timeline-caption{color:#a89a70}
+/* 标签 */
+body.greek .tag{border-color:#31498a;color:#9db4ea;background:#002fa722}
+body.greek .tag.god{background:linear-gradient(180deg,#efd98a,#d9b84a);color:#5c0e12;border-color:var(--gold-deep);font-weight:600}
+body.greek .character-kind{color:#cfd9f7;background:#002fa744}
+body.greek .character-kind.god{color:#5c0e12;background:linear-gradient(180deg,#efd98a,#d9b84a)}
+body.greek .legend-dot{background:var(--gold)}
+/* ============ 线索板 ============ */
+body.greek .board-canvas{background-color:#0f1c40;background-image:radial-gradient(#31498a66 0.8px,transparent .9px);border-color:var(--line)}
+body.greek .connections line{stroke:#c9a227}
+body.greek .connections line.auto{stroke:#4a6fd4}
+body.greek .board-help{color:#8fa3d9}
+body.greek .board-live{background:var(--gold)}
+body.greek .board-empty{color:#a89a70}
+/* 提示气泡 */
+body.greek .toast{background:#14224a;color:var(--gold-hi);border:1px solid var(--gold)}
+/* 页脚 */
+body.greek .app-footer{color:#8fa3d9;border-top:1px solid #31498a}
+
+/* ============ 补漏：文本按钮 / 索引行故事标 / 节点外框 / 滚动条 ============ */
+body.greek .text-button{color:var(--gold-hi);background:#1b3161;border:1px solid #31498a;border-radius:3px}
+body.greek .text-button:hover{background:#26407c;border-color:var(--gold)}
+body.greek .row-story{background:#002fa744;color:#cfd9f7}
+/* 节点只是圆点：去掉按钮默认的圆角灰框 */
+body.greek .time-node{background:transparent;border:0;padding:0;border-radius:0}
+/* 滚动条：墨蓝轨道 + 蓝金滑块 */
+body.greek *{scrollbar-color:#31498a #0f1c40;scrollbar-width:thin}
+body.greek ::-webkit-scrollbar{width:9px;height:9px}
+body.greek ::-webkit-scrollbar-track{background:#0f1c40}
+body.greek ::-webkit-scrollbar-thumb{background:#31498a;border-radius:5px;border:2px solid #0f1c40}
+body.greek ::-webkit-scrollbar-thumb:hover{background:var(--gold)}
+
+/* ============ 标签四类分色 + 线索绯红 ============ */
+body.greek .tag.human{background:#002fa744;color:#cfd9f7;border-color:#4a6fd4}
+body.greek .tag.animal{background:#4d5a2a;color:#e8ecd0;border-color:#8a9460}
+body.greek .tag.other{background:#4a3a5e;color:#e0d4f0;border-color:#7a6390}
+body.greek .tag.clue{background:#5c0e12;color:#f0b9a8;border-color:#a83226}
+
+/* ============ 网页背景：低透明度希腊回纹替换圆点 ============ */
+body.greek{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M4 24V4h20v9H11v7h9v-3h-4' fill='none' stroke='%23c9a227' stroke-opacity='0.08' stroke-width='1.4'/%3E%3C/svg%3E"),linear-gradient(160deg,#0b1330 0%,#101c42 50%,#0a1026 100%);
+  background-size:28px 28px,100% 100%;
+}
+
+/* ============ 顶栏红色拉满 ============ */
+body.greek .topbar{margin:0 -50px;padding:0 50px}
+@media(max-width:1100px){body.greek .topbar{margin:0 -28px;padding:0 28px}}
+@media(max-width:650px){body.greek .topbar{margin:0 -16px;padding:0 16px}}

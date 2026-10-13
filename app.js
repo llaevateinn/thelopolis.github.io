@@ -934,8 +934,9 @@ function renderLibrary() {
   ).join('') : emptyHTML('没有找到 clips', '试试调整关键词，或新建一个 clips。', '⌕');
   $$('[data-edit]', root).forEach(el => {
     const key = 'lc:' + el.dataset.edit;
-    el.onclick = () => {   // 单击：就地展开/收起全文（两种模式一致）
-      expandedCards.has(key) ? expandedCards.delete(key) : expandedCards.add(key);
+    el.onclick = () => {   // 单击：就地展开全文；已展开则点击不收起，用悬浮收起键
+      if (expandedCards.has(key)) return;
+      expandedCards.add(key);
       renderLibrary(); updateCollapseUI();
     };
     el.ondblclick = () => { if (editUnlocked) openPassage(el.dataset.edit); };   // 双击：去码字页编辑

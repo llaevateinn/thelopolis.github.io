@@ -1,3 +1,12 @@
 .interval-panel{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9;display:flex;align-items:center;gap:14px;flex-wrap:wrap;width:max-content;max-width:calc(100vw - 32px);padding:12px 16px;border:1px solid #e4e0d6;border-radius:8px;background:#f5f3ec;box-shadow:0 12px 32px #2e2f2738}.interval-intro{display:flex;align-items:center;gap:9px}.interval-icon{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#796b4a;background:#e1dccb;font-size:15px}.interval-intro b{display:block;font-size:10px;font-weight:500;color:#4e4e42}.interval-intro small{display:block;font-size:8px;color:#929080;margin-top:3px}.interval-panel>.button{padding:8px 10px}.time-node{touch-action:none;user-select:none}.time-node.selected .node-dot{transform:scale(1.7);background:var(--rust);box-shadow:0 0 0 3px #b26d5033}.time-node.dragging{z-index:5;cursor:grabbing}.time-node.dragging .node-card{opacity:.72}
 .board-card.dragging{transition:none;cursor:grabbing;z-index:4}
 @media(max-width:650px){.interval-panel{gap:10px}.interval-intro{width:100%}.interval-panel>.button{flex:1}}
+
+/* --- 未入线拖入：落点预览卡 + 轴上刻度 --- */
+.pool-drop-preview{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:flex-start;gap:8px;max-width:220px;padding:9px 11px;background:#fffefa;border:1px dashed #b26d50;border-radius:5px;box-shadow:0 8px 22px #37372e22;opacity:0;pointer-events:none;transition:opacity .12s;z-index:6}
+.pool-drop-preview.on{opacity:.92}
+.pool-drop-preview i{width:9px;height:9px;border-radius:50%;margin-top:4px;flex:none}
+.pool-drop-preview b{display:block;font:500 12px var(--serif);color:#414138;line-height:1.5}
+.pool-drop-preview small{display:block;font-size:9px;color:#999687;margin-top:2px}
+.pool-drop-marker{position:absolute;width:2px;height:34px;transform:translate(-50%,-50%);background:repeating-linear-gradient(180deg,#b26d50 0 4px,transparent 4px 8px);opacity:0;pointer-events:none;transition:opacity .12s;z-index:6}
+.pool-drop-marker.on{opacity:.9}

@@ -112,6 +112,7 @@ let tlExpanded = false;
 let boardZoom = 1;           // boot() 中依数据赋值
 let timeNodeEls = new Map();   // 时间线节点元素缓存（实现展开动画）
 let tlRowCount = 1;            // 展开模式当前行数（幽灵行轴线吸附用）
+let poolDragId = null;         // 正在从未入线池拖出的 clip id
 
 /* ============ 基础工具 ============ */
 function $(q, r = document) { return r.querySelector(q); }
@@ -439,6 +440,31 @@ function hideGhost() {
   track.querySelector('.ghost-slot')?.classList.remove('on');
 }
 
+/* --- 未入线拖入预览：跟随落点的半透明卡片 + 时间轴落点刻度 --- */
+function poolGhostEls() {
+  const track = $('#timeline-track');
+  let g = track.querySelector('.pool-drop-preview');
+  if (!g) { g = document.createElement('div'); g.className = 'pool-drop-preview'; track.appendChild(g); }
+  let m = track.querySelector('.pool-drop-marker');
+  if (!m) { m = document.createElement('div'); m.className = 'pool-drop-marker'; track.appendChild(m); }
+  return { g, m };
+}
+function showPoolGhost(p, x, y) {
+  const { g, m } = poolGhostEls();
+  g.innerHTML = `<i style="background:${storyColor(p.storyId)}"></i><span><b>${esc(p.title || '未命名 clip')}</b><small>${esc(p.date || '时间待补')} · ${esc(story(p.storyId)?.title || '未归档')}</small></span>`;
+  g.style.left = x + 'px';
+  g.style.top = (y - 16) + 'px';
+  m.style.left = x + 'px';
+  m.style.top = y + 'px';
+  g.classList.add('on'); m.classList.add('on');
+}
+function hidePoolGhost() {
+  const track = $('#timeline-track');
+  track.querySelector('.pool-drop-preview')?.classList.remove('on');
+  track.querySelector('.pool-drop-marker')?.classList.remove('on');
+  hideGhost();
+}
+
 /* --- 展开模式落点：纵向吸附最近的行轴线；横向按落点在两邻居间线性插值为时间位置（邻居取当前实际坐标，排除拖动组） --- */
 function expandedDropPosition(excludeIds, dropLeft, dropTop, rowW) {
   const placed = filteredPassages().filter(p => Number.isFinite(p.position)).sort((a, b) => a.position - b.position);
@@ -580,7 +606,8 @@ function renderPool(unplaced) {
     `<span class="pool-chip" draggable="true" data-pool="${esc(p.id)}" title="${esc(p.title)}"><i style="background:${storyColor(p.storyId)}"></i>${esc(p.title)}</span>`
   ).join('');
   $$('.pool-chip', chips).forEach(chip => {
-    chip.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', chip.dataset.pool); e.dataTransfer.effectAllowed = 'move'; });
+    chip.addEventListener('dragstart', e => { poolDragId = chip.dataset.pool; e.dataTransfer.setData('text/plain', chip.dataset.pool); e.dataTransfer.effectAllowed = 'move'; });
+    chip.addEventListener('dragend', () => { poolDragId = null; hidePoolGhost(); });
     chip.addEventListener('dblclick', () => openPassage(chip.dataset.pool));
   });
 }
@@ -1237,9 +1264,19 @@ function applyTheme() {
 }
 
 /* --- 云端保存：用 GitHub PAT 把数据写回仓库 archive.json（令牌只存本机） --- */
+/* 从 GitHub Pages 网址推断仓库：username.github.io/repo → username/repo；用户页 → username/username.github.io */
+function guessRepo() {
+  const host = location.hostname;
+  if (host.endsWith('.github.io')) {
+    const owner = host.slice(0, -'.github.io'.length);
+    const seg = location.pathname.split('/').filter(Boolean)[0];
+    return seg ? `${owner}/${seg}` : `${owner}/${owner}.github.io`;
+  }
+  return null;
+}
 async function cloudSave() {
   if (!editUnlocked) return;
-  let repo = localStorage.getItem('tpl_gh_repo');
+  let repo = localStorage.getItem('tpl_gh_repo') || guessRepo();
   let token = localStorage.getItem('tpl_gh_token');
   if (!repo) {
     repo = prompt('GitHub 仓库（形如 username/repo）：');
@@ -1263,10 +1300,17 @@ async function cloudSave() {
     const content = btoa(unescape(encodeURIComponent(JSON.stringify(pub, null, 1))));
     const res = await fetch(api, { method: 'PUT', headers: head, body: JSON.stringify({ message: '更新故事档案', content, ...(sha ? { sha } : {}) }) });
     if (!res.ok) throw new Error(await res.text());
-    notify('已保存到云端，GitHub Pages 正在重新部署（几分钟后访客可见）');
+    notify(`已保存到 ${repo.trim()}，GitHub Pages 正在重新部署（几分钟后访客可见）`);
   } catch (e) {
     console.error(e);
-    notify('云端保存失败：请检查仓库名与令牌权限');
+    // 失败后可重设：清掉已存的仓库名与令牌，下次重新输入（仓库留空则按网址自动推断）
+    if (confirm('云端保存失败：可能是仓库名不对，或令牌失效/权限不足。\n\n点「确定」重新设置仓库与令牌；点「取消」稍后再试。')) {
+      localStorage.removeItem('tpl_gh_repo');
+      localStorage.removeItem('tpl_gh_token');
+      const r = prompt('GitHub 仓库（形如 username/repo；留空则按当前网址自动推断）：');
+      if (r && r.trim()) localStorage.setItem('tpl_gh_repo', r.trim());
+      cloudSave();
+    } else notify('云端保存失败');
   }
 }
 
@@ -1363,10 +1407,30 @@ function bindEvents() {
     save(); renderTimeline();
   }, { passive: false });
   scroll.addEventListener('dragover', e => {
-    if ([...(e.dataTransfer?.types || [])].includes('text/plain')) e.preventDefault();
+    if (![...(e.dataTransfer?.types || [])].includes('text/plain')) return;
+    e.preventDefault();
+    // 未入线拖入：实时预览落点卡片与轴上位置
+    if (!poolDragId || !editUnlocked) return;
+    const p = clip(poolDragId); if (!p) return;
+    const rect = $('#timeline-track').getBoundingClientRect();
+    const left = clamp(e.clientX - rect.left, 40, Math.max(420, scroll.clientWidth - 40));
+    if (tlExpanded) {
+      const top = e.clientY - rect.top;
+      const rowW = Math.max(420, scroll.clientWidth - 120);
+      const drop = expandedDropPosition(new Set([p.id]), left, top, rowW);
+      showGhost(top, left);   // 复用行轴线吸附提示
+      showPoolGhost(p, left, drop.row * ROW_H + 120);
+    } else {
+      const pos = Math.max(0, Math.round((e.clientX - rect.left - 40) / tlZoom));
+      const x = 40 + pos * tlZoom;
+      const midY = (scroll.clientHeight || 230) / 2;
+      showPoolGhost(p, x, midY);
+    }
   });
+  scroll.addEventListener('dragleave', e => { if (!scroll.contains(e.relatedTarget)) hidePoolGhost(); });
   scroll.addEventListener('drop', e => {
     if (!editUnlocked) return;   // 参观模式：不允许拖入时间线
+    hidePoolGhost();
     const pid = e.dataTransfer.getData('text/plain');
     const p = clip(pid);
     if (!p) return;

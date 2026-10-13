@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f4f1e9" />
+  <title>忒洛波利斯 · 故事档案</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="timeline-interactions.css" />
+  <link rel="stylesheet" href="writer.css" />
+  <link rel="stylesheet" href="characters.css" />
+  <link rel="stylesheet" href="features.css" />
+  <link rel="stylesheet" href="theme-greek.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="回到档案首页"><span class="brand-mark">忒</span><span><b>忒洛波利斯</b><small>PRIVATE STORY ARCHIVE</small></span></a>
+      <div class="side-label">工作台</div>
+      <nav class="nav-list" aria-label="主要导航">
+        <button class="nav-item active" data-view="timeline"><span class="nav-icon">◷</span>时间线</button>
+        <button class="nav-item" data-view="writer"><span class="nav-icon">✎</span>码字</button>
+        <button class="nav-item" data-view="board"><span class="nav-icon">⌘</span>线索关系板</button>
+        <button class="nav-item" data-view="library"><span class="nav-icon">▤</span>故事与 clips</button>
+        <button class="nav-item" data-view="characters"><span class="nav-icon">♙</span>角色数据库</button>
+        <button class="nav-item" data-view="clues"><span class="nav-icon">⬡</span>线索</button>
+      </nav>
+      <div class="side-divider"></div>
+      <button class="nav-item" id="theme-toggle"><span class="nav-icon">🏛</span>忒洛波利斯</button>
+      <div class="font-size-switch" id="font-size-switch"><span>字号</span><button type="button" data-fs="s">小</button><button type="button" data-fs="m">标准</button><button type="button" data-fs="l">大</button></div>
+      <div class="side-divider"></div>
+      <div class="side-label">档案概览</div>
+      <div class="stat-line"><span>故事</span><b id="story-count">0</b></div>
+      <div class="stat-line"><span>clips</span><b id="passage-count">0</b></div>
+      <div class="stat-line"><span>已连线</span><b id="link-count">0</b></div>
+        <div class="stat-line"><span>线索</span><b id="clue-count">0</b></div>
+      <div class="sidebar-note"><span class="note-dot"></span><span>你的故事，由你编排<br><small>数据仅保存在此浏览器</small></span></div>
+      <div class="sidebar-bottom"><span class="avatar">祭</span><span>私人档案空间<small>LOCAL WORKSPACE</small></span><span class="status-dot"></span></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar"><div class="breadcrumb">忒洛波利斯 <span>/</span> <b id="crumb-current">时间线</b></div><div class="top-actions"><span class="save-state"><i></i> 自动保存</span><button class="button button-dark" id="add-passage-top"><span>✎</span> 继续写作</button></div></header>
+      <section class="view active" id="view-timeline">
+        <div class="page-heading"><div><div class="eyebrow">CHRONOLOGY · 01</div><h1>时间线</h1><p>一篇故事由多个 clips 组成，每个 clip 都可以发生在不同的时间线。</p></div><button class="button button-outline" id="timeline-reset">重置筛选</button></div>
+        <div class="filter-bar">
+          <label class="filter-control"><span>故事</span><select id="filter-story"><option value="all">全部故事</option></select></label>
+          <label class="filter-control"><span>角色</span><select id="filter-character"><option value="all">全部角色</option></select></label>
+          <label class="filter-control"><span>时间线</span><select id="filter-timeline"><option value="all">全部时间线</option></select></label>
+          <label class="filter-control"><span>线索</span><select id="filter-clue"><option value="all">全部线索</option></select></label>
+          <span class="filter-result" id="timeline-result">显示 0 个 clips</span>
+        </div>
+        <div class="timeline-pool hidden" id="timeline-pool"><span class="pool-label">未入线</span><span class="pool-chips" id="pool-chips"></span><span class="pool-hint">拖动圆点到时间线上放置</span></div>
+        <div class="timeline-card"><div class="timeline-caption"><span><i class="legend-dot"></i>故事发生顺序</span><span class="timeline-tools"><button class="text-button" id="timeline-clear-sel">清除选择</button><button class="text-button" id="timeline-expand">展开</button><span class="mono" id="tl-zoom">100%</span></span><span class="mono" id="timeline-range">NO ENTRIES YET</span></div><div class="timeline-scroll" id="timeline-scroll"><div class="timeline-track" id="timeline-track"></div></div><div class="timeline-footer"><span>← 横向滚动，浏览时间切片 →</span><span>点击节点多选 · 拖动调整位置 · 向下拖出轨道移出时间线 · Ctrl+滚轮缩放</span></div></div>
+        <div class="interval-panel hidden" id="interval-panel"><div class="interval-intro"><span class="interval-icon">⛓</span><div><b id="interval-title">已选 2 个节点</b><small>按当前相对位置锁定为一组，节点不会移动；拖动任意一个，整组同步移动</small></div></div><button class="button button-dark" id="lock-group">锁定当前位置</button><button class="button button-outline" id="unlock-group">解除锁定</button><button class="button button-outline" id="cancel-interval">取消选择</button></div>
+        <div class="section-head"><div><div class="eyebrow">CLIPS</div><h2>clips 索引</h2></div><button class="text-button" data-switch="library">查看全部 clips <span>→</span></button></div>
+        <div class="passage-list" id="timeline-list"></div>
+      </section>
+      <section class="view" id="view-writer">
+        <div class="writer-heading"><div><div class="eyebrow">WRITING DESK</div><div class="writer-story-row"><select id="writer-story-select" aria-label="选择故事"></select><input id="writer-story-title" placeholder="故事标题" maxlength="120" /></div><p>每个分节是一条 clip。按 Ctrl + Enter 可在当前节下方新增 clip。</p></div><div class="writer-heading-actions"><button class="button button-outline" id="writer-new-story">＋ 新故事</button><button class="button button-outline" id="writer-delete-story">删除故事</button></div></div>
+        <div class="writer-toolbar"><span class="toolbar-label">文本</span><button class="writer-format-button" id="writer-bold" type="button" title="加粗（Ctrl+B）"><b>B</b></button><label>行间距 <select id="line-spacing"><option value="1.5">1.5 倍</option><option value="1.8">1.8 倍</option><option value="2">2 倍</option><option value="2.2">2.2 倍</option></select></label><label>段间距 <select id="paragraph-spacing"><option value="8">紧凑</option><option value="16">标准</option><option value="24">宽松</option><option value="32">加宽</option></select></label><label>显示 <select id="writer-section-filter"><option value="all">全部 clips</option><option value="body">仅正文</option><option value="outline">仅大纲</option></select></label><span class="writer-save-hint">排版设置仅影响行距和段距</span><button class="writer-collapse-all" id="writer-collapse-all" type="button">全部收起</button><button class="button button-outline" id="writer-save">保存</button></div>
+        <div class="writer-sections" id="writer-sections"></div>
+        <button class="add-section-button" id="writer-add-section"><span>＋</span> 在文档末尾新增 clip</button>
+        <button type="button" class="writer-float-split" id="writer-split-float" disabled>✂ 从光标处断开 clip</button>
+      </section>
+      <section class="view" id="view-board">
+        <div class="page-heading"><div><div class="eyebrow">CONNECTIONS · 02</div><h1>线索关系板</h1><p>把有关联的 clips 连在一起。点击卡片选中两条内容，即可建立或移除连线。</p></div><button class="button button-outline" id="clear-selection">取消选择</button></div>
+        <div class="board-toolbar"><div><span class="board-live"></span> <b id="board-mode">选择两张卡片建立关联</b><small>关系会保存在本机，可反复调整 · <i class="lg lg-manual"></i>手动关联 <i class="lg lg-auto"></i>相同线索自动关联</small></div><div class="board-toolbar-right"><span class="mono" id="board-zoom">100%</span><button class="button button-outline" id="board-filter-toggle">筛选 clips <span>⌄</span></button></div></div>
+        <div class="board-filter hidden" id="board-filter"><label class="filter-control"><span>故事</span><select id="board-story-filter"><option value="all">全部故事</option></select></label><label class="filter-control"><span>角色</span><select id="board-character-filter"><option value="all">全部角色</option></select></label><label class="filter-control"><span>时间线</span><select id="board-timeline-filter"><option value="all">全部时间线</option></select></label></div>
+        <div class="board-canvas" id="board-canvas"><div id="board-spacer"></div><div id="board-inner"><svg class="connections" id="connections" aria-hidden="true"></svg><div class="board-nodes" id="board-nodes"></div></div><div class="board-empty hidden" id="board-empty"><span>⌘</span><h3>线索板还是空的</h3><p>添加 clips 后，点击两张卡片建立它们的关联。</p></div><div class="board-help">拖动卡片 · 按住 Ctrl 对齐网格 · 点击两张卡片建立/移除关联 · 点击连线可移除 · Ctrl+滚轮缩放</div></div>
+      </section>
+      <section class="view" id="view-library">
+        <div class="page-heading"><div><div class="eyebrow">ARCHIVE · 04</div><h1>故事与 clips</h1><p>故事是一篇完整文档；每个分节都是一个 clip，拥有自己的时间与角色标注。</p></div><button class="button button-dark" id="add-story"><span>＋</span> 新建故事</button></div>
+        <div class="library-toolbar"><div class="library-tabs"><button class="library-tab active" data-tab="passages">全部 clips <span id="tab-passage-count">0</span></button><button class="library-tab" data-tab="stories">故事 <span id="tab-story-count">0</span></button></div><label class="search-box"><span>⌕</span><input id="library-search" placeholder="搜索标题、正文或角色…" /></label></div>
+        <div class="library-content" id="library-content"></div>
+      </section>
+      <section class="view" id="view-characters">
+        <div class="page-heading"><div><div class="eyebrow">CAST INDEX · 05</div><h1>角色数据库</h1><p>集中记录角色资料，并在 clip 设置中标注他们的出场。</p></div></div>
+        <div class="character-db-layout">
+          <form class="character-editor" id="character-form"><div class="eyebrow" id="character-form-eyebrow">NEW CHARACTER</div><h2 id="character-form-title">添加角色</h2><input type="hidden" id="character-id"><label class="form-field"><span>角色名称</span><input id="character-name" required maxlength="80" placeholder="角色姓名或称呼"></label><label class="form-field"><span>英文名</span><input id="character-enname" maxlength="80" placeholder="选填，仅在此作写作参考"></label><label class="form-field"><span>默认身份</span><select id="character-kind"><option value="god">神</option><option value="human" selected>人类</option><option value="animal">动物</option><option value="other">其他</option></select></label><label class="form-field"><span>角色简介</span><textarea id="character-description" rows="5" placeholder="记录身份、性格、目标或其他备忘"></textarea></label><div class="character-form-actions"><button class="button button-outline hidden" id="character-cancel-edit" type="button">取消编辑</button><button class="button button-dark" id="character-save" type="submit">保存角色</button></div></form>
+          <div class="character-directory"><div class="character-directory-toolbar"><div><b>全部角色</b><small id="character-count">0 位角色</small></div><div class="character-toolbar-actions"><button type="button" class="text-button" id="detect-all-characters">从全文识别角色</button><button type="button" class="text-button" id="merge-duplicates">合并同名角色</button><select id="character-kind-filter"><option value="all">全部身份</option><option value="god">神</option><option value="human">人类</option><option value="animal">动物</option><option value="other">其他</option></select><label class="search-box"><span>⌕</span><input id="character-search" placeholder="搜索角色或简介…"></label></div></div><div class="character-grid" id="character-list"></div></div>
+        </div>
+      </section>
+      <section class="view" id="view-clues">
+        <div class="page-heading"><div><div class="eyebrow">CLUE INDEX · 06</div><h1>线索</h1><p>集中管理故事线索。拥有相同线索的 clips 会在线索板上自动关联。</p></div></div>
+        <div class="character-db-layout">
+          <form class="character-editor" id="clue-form"><div class="eyebrow" id="clue-form-eyebrow">NEW CLUE</div><h2 id="clue-form-title">添加线索</h2><input type="hidden" id="clue-id"><label class="form-field"><span>线索名称</span><input id="clue-name" required maxlength="80" placeholder="线索名称，例如：银钥匙"></label><label class="form-field"><span>线索简介</span><textarea id="clue-description" rows="5" placeholder="记录这条线索的含义、来历或备忘"></textarea></label><div class="character-form-actions"><button class="button button-outline hidden" id="clue-cancel-edit" type="button">取消编辑</button><button class="button button-dark" id="clue-save" type="submit">保存线索</button></div></form>
+          <div class="character-directory"><div class="character-directory-toolbar"><div><b>全部线索</b><small id="clue-dir-count">0 条线索</small></div><label class="search-box"><span>⌕</span><input id="clue-search" placeholder="搜索线索或简介…"></label></div><div class="character-grid" id="clue-list"></div></div>
+        </div>
+      </section>
+      <footer class="app-footer"><span>忒洛波利斯 · 私人故事档案</span><span>一段一段，拼回故事的形状。</span></footer>
+    </main>
+  </div>
+  <div class="modal-backdrop hidden" id="modal-backdrop"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><header class="modal-header"><div><div class="eyebrow">CLIP DETAILS</div><h2 id="modal-title">Clip 设置</h2></div><button class="icon-button" id="modal-close" aria-label="关闭">×</button></header><form id="entry-form"><input type="hidden" id="entry-id"><label class="form-field" id="entry-story-field"><span>所属故事</span><select id="entry-story"></select></label><label class="form-field"><span>Clip 标题</span><input id="entry-title" required maxlength="100" placeholder="给这个分节起个标题" /></label><label class="form-field" id="entry-body-field"><span>正文</span><textarea id="entry-body" rows="5" placeholder="在码字页面中编辑正文"></textarea></label><div class="form-row"><label class="form-field"><span>发生时间</span><input id="entry-date" type="text" placeholder="例如：第三年·冬 / 约 17:40" /></label><label class="form-field"><span>时间线</span><input id="entry-timeline" type="text" placeholder="例如：主线 / 回忆线" /></label></div><fieldset class="form-field character-field"><legend>出场角色</legend><div class="character-picks" id="character-picks"></div><div class="character-add"><input id="new-character" placeholder="添加角色名" /><select id="new-character-role"><option value="god">神</option><option value="human">人类</option><option value="animal">动物</option><option value="other">其他</option></select><button type="button" class="button button-outline" id="add-character">添加</button></div><small>标记此 clip 中的主角或配角，可用于筛选。</small></fieldset><label class="form-field" id="entry-kind-field"><span>类型</span><select id="entry-section"><option value="body">正文</option><option value="outline" selected>大纲</option></select></label><fieldset class="form-field character-field"><legend>线索</legend><div class="clue-picks character-picks" id="clue-picks"></div><div class="character-add"><input id="new-clue" placeholder="添加线索名" /><button type="button" class="button button-outline" id="add-clue">添加</button></div><small>拥有相同线索的 clips 会在线索板上自动关联。</small></fieldset><div class="modal-actions"><button type="button" class="button button-outline hidden" id="delete-entry">删除 clip</button><span></span><button type="button" class="button button-outline" id="cancel-entry">取消</button><button class="button button-dark" type="submit">保存设置</button></div></form></section></div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

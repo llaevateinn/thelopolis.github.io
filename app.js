@@ -637,11 +637,11 @@ function renderTimeline() {
       + (tlPeekId === p.id ? ' peek' : '');
     el.title = p.title;
     el.querySelector('.node-dot').style.background = storyColor(p.storyId);
-    // 标题两份：完整版（卡片展开时显示）与缩略版（小竖卡显示），由 CSS 按卡片状态切换
+    // 带序号的标题拆成「标题列 + 序号列」（无论长短），竖卡中序号独立成一列、不再随标题折行
     const bEl = el.querySelector('.node-card b');
     const tm = /^(.+)（([0-9０-９]+[\/／][0-9０-９]+)）$/.exec(p.title || '');
-    if (tm && tm[1].length > 6) {
-      bEl.innerHTML = `<span class="t-full">${esc(tm[1])}</span><span class="t-short">${esc(tm[1].slice(0, 6))}……</span><span class="t-num">（${esc(tm[2])}）</span>`;
+    if (tm) {
+      bEl.innerHTML = `<span class="t-full">${esc(tm[1])}</span><span class="t-short">${esc(tm[1])}</span><span class="t-num">（${esc(tm[2])}）</span>`;
     } else bEl.textContent = p.title;
     el.querySelector('.node-card small').textContent = (p.date || '时间待补') + ' · ' + (story(p.storyId)?.title || '未归档');
     el.querySelector('.node-excerpt').textContent = (p.body || '').replace(/\s+/g, ' ').trim().slice(0, 80);
@@ -1510,7 +1510,7 @@ function importData(file) {
 }
 
 /* --- 字号三档（小 / 标准 / 大） --- */
-const FONT_ZOOM = { s: '0.92', m: '', l: '1.12' };
+const FONT_ZOOM = { s: '', m: '1.12', l: '1.26' };   // 整体上移一档：原标准→小、原大→标准、大更大
 function applyFontSize() {
   const fs = FONT_ZOOM[db.prefs.fontSize] !== undefined ? db.prefs.fontSize : 'm';
   document.body.style.zoom = FONT_ZOOM[fs];

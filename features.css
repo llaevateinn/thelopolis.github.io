@@ -30,7 +30,7 @@
 .ghost-rowline.new-row{background:repeating-linear-gradient(90deg,#b26d50 0 8px,transparent 8px 15px);box-shadow:none}
 .ghost-slot{position:absolute;width:14px;height:14px;border-radius:50%;border:2px solid #b99b5a;background:#fffefa;transform:translate(-50%,-50%);display:none;pointer-events:none;z-index:2;box-shadow:0 0 8px #b99b5a55}
 .ghost-slot.on{display:block}
-.timeline-track:not(.expanded) .node-card{writing-mode:vertical-rl;width:40px;height:96px;padding:8px 6px;display:flex;gap:8px;align-items:flex-start;justify-content:flex-start;text-align:start}
+.timeline-track:not(.expanded) .node-card{writing-mode:vertical-rl;width:auto;min-width:40px;height:96px;padding:8px 6px;display:flex;gap:8px;align-items:center;justify-content:flex-start;text-align:start}
 .timeline-track:not(.expanded) .node-card b{font-size:10px;font-weight:500}
 .timeline-track:not(.expanded) .node-card small{display:none}
 .timeline-track:not(.expanded) .node-card{overflow:hidden}
@@ -91,13 +91,15 @@
 /* --- 时间线：悬浮置顶 + 点击放大预览 + 点态悬浮卡片 --- */
 .time-node:hover{z-index:9}
 .node-excerpt{display:none;font-style:normal;font:10px/1.6 var(--serif);color:#747365;margin-top:5px}
-.node-card b span{display:block}
+/* 竖排小卡：完整标题与序号各占一列，长标题自动向左折列、卡片随之加宽；缩略版不再使用 */
+.timeline-track:not(.expanded) .time-node:not(.peek):not(.dot-only) .node-card b span:not(.t-short){display:block}
+.timeline-track:not(.expanded) .time-node:not(.peek):not(.dot-only) .node-card b .t-short{display:none}
 /* 标题显隐：默认小卡只显示缩略版；展开态时间线、点开放大的卡、点态悬浮卡都显示完整版 */
 .node-card b .t-full{display:none}
-.timeline-track.expanded .node-card b .t-full{display:block}
+.timeline-track.expanded .node-card b .t-full{display:inline}
 .timeline-track.expanded .node-card b .t-short{display:none}
 .timeline-track:not(.expanded) .time-node.peek .node-card b .t-full,
-.timeline-track:not(.expanded) .time-node.dot-only:hover .node-card b .t-full{display:block}
+.timeline-track:not(.expanded) .time-node.dot-only:hover .node-card b .t-full{display:inline}
 .timeline-track:not(.expanded) .time-node.peek .node-card b .t-short,
 .timeline-track:not(.expanded) .time-node.dot-only:hover .node-card b .t-short{display:none}
 /* 收起态：点开放大 */
@@ -114,9 +116,9 @@
 .timeline-track.expanded .time-node.peek .node-card{width:260px;border-color:#c7b889;box-shadow:0 12px 28px #38382c26}
 .timeline-track.expanded .time-node.peek .node-excerpt{display:block}
 
-/* --- 收起态竖卡：行高压到 1、卡高加大，保证"6 字 + ……"一列放完 --- */
+/* --- 收起态竖卡：卡高加大；列宽（行高）放宽，长标题自动折列、卡片随之加宽 --- */
 .timeline-track:not(.expanded) .node-card{height:104px}
-.timeline-track:not(.expanded) .node-card b{line-height:1}
+.timeline-track:not(.expanded) .node-card b{line-height:1.45}
 
 /* --- 展开模式：未入线池悬浮窗 --- */
 .timeline-pool.floating{position:fixed;right:22px;top:78px;z-index:9;width:288px;max-height:52vh;overflow-y:auto;margin:0;border:1px solid #e4e0d6;border-radius:8px;background:#f5f3ec;box-shadow:0 12px 32px #2e2f2738;align-items:flex-start}
@@ -125,7 +127,7 @@
 /* --- 侧栏：字号三档切换 --- */
 .font-size-switch{display:flex;align-items:center;gap:5px;margin:8px 9px 0;color:inherit;opacity:.85}
 .font-size-switch span{font-size:9px;margin-right:3px}
-.font-size-switch button{flex:1;border:1px solid currentColor;border-radius:3px;background:transparent;color:inherit;font-size:9px;padding:4px 2px;cursor:pointer;opacity:.65}
+.font-size-switch button{flex:none;border:1px solid currentColor;border-radius:3px;background:transparent;color:inherit;font-size:9px;padding:4px 7px;cursor:pointer;opacity:.65}
 .font-size-switch button.on{opacity:1;background:#ffffff1c;font-weight:600}
 
 /* --- 参观模式：隐藏一切编辑入口 --- */

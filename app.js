@@ -1535,10 +1535,12 @@ function bindEvents() {
   // 访问权限与数据管理
   $('#auth-toggle').onclick = () => editUnlocked ? lockDown() : tryUnlock();
   $('#side-toggle').onclick = () => {
+    document.body.classList.add('side-anim');   // 过渡期间隐藏侧栏内容，避免文字挤压
     const collapsed = document.body.classList.toggle('side-collapsed');
     db.prefs.sideCollapsed = collapsed;
     $('#side-toggle .nav-icon').textContent = collapsed ? '▸' : '◂';
     save();
+    setTimeout(() => document.body.classList.remove('side-anim'), 320);
   };
   $('#cloud-save').onclick = cloudSave;
   $('#cloud-settings').onclick = cloudSettings;

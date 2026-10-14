@@ -213,6 +213,9 @@ body.ctrl-held .board-canvas{cursor:grab}
 
 /* --- 侧栏：收起/展开（图标原地不动，仅收窄宽度、淡出文字） --- */
 .sidebar,.main-area{transition:width .3s ease,margin-left .3s ease,max-width .3s ease}
+/* 收起/展开过渡期间：隐藏侧栏全部内容，杜绝文字挤压；过渡结束后按当前状态快速渐现 */
+.sidebar>*{transition:opacity .16s ease}
+body.side-anim .sidebar>*{opacity:0;transition:none}
 body.side-collapsed .sidebar{width:56px;overflow:hidden}
 body.side-collapsed .main-area{margin-left:56px;max-width:calc(100% - 56px)}
 body.side-collapsed .side-label,

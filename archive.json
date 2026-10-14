@@ -943,74 +943,92 @@
    "id": "ac015b3a-57b3-419e-a829-d8a094e83827",
    "name": "埃奎",
    "kind": "god",
-   "description": "",
+   "description": "司掌大地、酒、庆典的神，忒洛波利斯的大祭司，尤斯名义上的哥哥。\n他的名字后来演化成了 aequitas。",
    "enName": "Aekre"
   },
   {
    "id": "e847ac64-97d5-42b5-a6ad-ded31a9e2779",
    "name": "尤斯",
    "kind": "god",
-   "description": "",
+   "description": "司掌秩序之神，也负责审判罪孽。\n名义上，是埃奎的弟弟。\n他的名字后来演化成了 giustizia。",
    "enName": "Gius"
   },
   {
    "id": "1f77b4ae-799a-4193-84a1-338a5c963d11",
    "name": "忒洛斯",
    "kind": "god",
-   "description": "",
+   "description": "意念凝结而成的化身，能够实现一切愿望。祂无私地将神力中的那一部分赠予你，来让你梦想成真。\n祂的名字后来演化成了 thelisis。",
    "enName": "Thelos"
   },
   {
    "id": "d8a685a4-a5ab-4989-ad0e-db71fde10210",
    "name": "贝壳",
    "kind": "animal",
-   "description": "",
+   "description": "埃奎的宠物狗，一条黑色猎犬。",
    "enName": "Cowrie"
   },
   {
    "id": "86cab156-d1a1-4c64-a44d-e5450ae1fa85",
    "name": "梅斯托",
    "kind": "god",
-   "description": "",
+   "description": "司掌生命轮回之神。\n身高三米的“巨人”。\n他死去的地方，后来被人称为 Mestre。",
    "enName": "Mesto"
   },
   {
    "id": "18f4fb6c-2d35-4729-ae06-7e1871fd078e",
    "name": "哈娜",
    "kind": "human",
-   "description": ""
+   "description": "你这小贱货，居然胆敢在光天化日之下说尤斯大人的不是！",
+   "enName": "Hana"
   },
   {
    "id": "93cc1fbb-4f72-4a08-9e45-b9f3225ee1bd",
    "name": "吕德维克·泊松",
    "kind": "human",
-   "description": ""
+   "description": "渔夫世家。\n传说中渔夫曾在满月之夜救起被从灯塔上扔进海里的尤斯，因此坚信渔夫是受到尤斯庇护的职业。\n后来，poisson演化成了“鱼”的意思。",
+   "enName": "Ludovic Poisson"
   },
   {
    "id": "9ed5a589-ad0b-4c3d-b406-5c131c050100",
    "name": "潘格诺索斯",
    "kind": "other",
-   "description": "",
+   "description": "忒洛斯在能量耗散后留下的幻形，给自己起名叫潘格诺索斯。\n他的名字后来演化成了 pantognostis。",
    "enName": "Pangnosus"
   },
   {
    "id": "425f5b6b-fe53-413f-a178-9a648668c5a3",
    "name": "阿塔纳绪涅",
    "kind": "god",
-   "description": "",
+   "description": "司掌荣耀、历史、飞禽的女神。\n她的名字后来演化成了 athanato、antanaklasi。",
    "enName": "Athanasyne"
   },
   {
    "id": "9e3b05d2-16d3-4903-b44c-09610d1e0293",
    "name": "刻俄提诺",
    "kind": "god",
-   "description": ""
+   "description": "司掌弓、声、走兽的女神。\n来自东方。",
+   "enName": "Ceotino"
   },
   {
    "id": "fd194830-8dd6-42f5-ae36-553ea3f0ec8c",
    "name": "梅兰赫·欧利亚",
    "kind": "human",
-   "description": ""
+   "description": "刻俄提诺，远离我的牢笼。",
+   "enName": "Melanch O'lya"
+  },
+  {
+   "id": "0a54f7d7-22e0-4cbe-9c9a-f987b3a9d9cc",
+   "name": "赫列狄",
+   "enName": "Heredi",
+   "kind": "god",
+   "description": "梅斯托的养女，被他收养的孤儿。\n梅斯托死后，成了埃奎的养女。\n没有打个响指就能让枝叶繁茂的能力，所以期待着每一次生命的蓬勃。\n她的名字后来演化成了 hereditate。"
+  },
+  {
+   "id": "a653c5c0-f6bc-4886-8b12-155bf8b8a353",
+   "name": "科肃斯",
+   "enName": "Kousus",
+   "kind": "human",
+   "description": "传说中的天才剑士，身形挺拔，容貌英俊。\n在浓雾里，剑会锈，剑术会生疏。"
   }
  ],
  "links": [
@@ -1125,7 +1143,7 @@
   {
    "id": "7fc9b1cc-a693-4c7b-818e-6dcb78e1e3ec",
    "name": "南鱼座",
-   "description": ""
+   "description": "秋天，南鱼座从地平线矮矮地升起，又倒退着飞回海洋。"
   },
   {
    "id": "aa380f06-acb6-44ae-9e90-cd02d0dbbab2",
@@ -1138,7 +1156,7 @@
   "tlZoom": 1.922491448755371,
   "boardZoom": 0.7117802478134111,
   "theme": "greek",
-  "fontSize": "l",
+  "fontSize": "s",
   "sideCollapsed": false
  }
 }
